@@ -40,24 +40,44 @@ const statusLabel: Record<string, { label: string, color: string, bg: string }> 
   used:     { label: '✅ Used',     color: '#9896B0', bg: '#F3F4F6' },
 }
 
-const menuItems = [
-  { section: 'Main', items: [
-    { icon: '🏠', label: 'Dashboard', href: '/dashboard', active: true },
-    { icon: '🔍', label: 'Explore Events', href: '/events' },
-    { icon: '🎫', label: 'My Tickets', href: '#', badge: '5' },
-    { icon: '🛒', label: 'Marketplace', href: '#' },
-  ]},
-  { section: 'Manage', items: [
-    { icon: '📅', label: 'My Events', href: '#', badge: '2' },
-    { icon: '💰', label: 'Earnings', href: '#' },
-    { icon: '🔔', label: 'Notifications', href: '#', badgeNew: '3' },
-    { icon: '🤍', label: 'Wishlist', href: '#', badge: '8' },
-  ]},
-  { section: 'Account', items: [
-    { icon: '👤', label: 'Profile', href: '#' },
-    { icon: '💎', label: 'Wallet', href: '#' },
-    { icon: '⚙️', label: 'Settings', href: '#' },
-  ]},
+interface MenuItem {
+  icon: string
+  label: string
+  href: string
+  active?: boolean
+  badge?: string
+  badgeNew?: string
+}
+
+interface MenuSection {
+  section: string
+  items: MenuItem[]
+}
+
+const menuItems: MenuSection[] = [
+  {
+    section: 'Main', items: [
+      { icon: '🏠', label: 'Dashboard', href: '/dashboard', active: true },
+      { icon: '🔍', label: 'Explore Events', href: '/events' },
+      { icon: '🎫', label: 'My Tickets', href: '#', badge: '5' },
+      { icon: '🛒', label: 'Marketplace', href: '#' },
+    ]
+  },
+  {
+    section: 'Manage', items: [
+      { icon: '📅', label: 'My Events', href: '#', badge: '2' },
+      { icon: '💰', label: 'Earnings', href: '#' },
+      { icon: '🔔', label: 'Notifications', href: '#', badgeNew: '3' },
+      { icon: '🤍', label: 'Wishlist', href: '#', badge: '8' },
+    ]
+  },
+  {
+    section: 'Account', items: [
+      { icon: '👤', label: 'Profile', href: '#' },
+      { icon: '💎', label: 'Wallet', href: '#' },
+      { icon: '⚙️', label: 'Settings', href: '#' },
+    ]
+  },
 ]
 
 export default function Dashboard() {
