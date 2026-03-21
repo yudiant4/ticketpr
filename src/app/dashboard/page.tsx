@@ -27,7 +27,7 @@ function TicketRow({ tokenId, ethPrice }: { tokenId: bigint, ethPrice: number })
     : { label: '🎫 Active', color: '#16A34A', bg: '#DCFCE7' }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1.5px solid #E8E4F5', borderRadius: '16px', opacity: ticket.used ? 0.6 : 1 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1.5px solid #E8E4F5', borderRadius: '16px', opacity: (ticket as any).used ? 0.6 : 1 }}>
       <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px', flexShrink: 0 }}>🎟️</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F0A1E' }}>
