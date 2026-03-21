@@ -82,7 +82,7 @@ export interface TicketNFTInterface extends Interface {
       | "eventCount"
       | "events"
       | "getApproved"
-      | "getEvent"
+      | "getEventDetails"
       | "getTicket"
       | "getTicketsByOwner"
       | "isApprovedForAll"
@@ -146,7 +146,7 @@ export interface TicketNFTInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getEvent",
+    functionFragment: "getEventDetails",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -245,7 +245,10 @@ export interface TicketNFTInterface extends Interface {
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getEvent", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getEventDetails",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getTicket", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTicketsByOwner",
@@ -556,7 +559,7 @@ export interface TicketNFT extends BaseContract {
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
-  getEvent: TypedContractMethod<
+  getEventDetails: TypedContractMethod<
     [_eventId: BigNumberish],
     [TicketNFT.EventStructOutput],
     "view"
@@ -748,7 +751,7 @@ export interface TicketNFT extends BaseContract {
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
   getFunction(
-    nameOrSignature: "getEvent"
+    nameOrSignature: "getEventDetails"
   ): TypedContractMethod<
     [_eventId: BigNumberish],
     [TicketNFT.EventStructOutput],
