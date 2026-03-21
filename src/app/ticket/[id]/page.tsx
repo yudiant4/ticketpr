@@ -38,8 +38,6 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
 
   const { mint, isPending, isConfirming, isSuccess, error } = useMintTicket()
 
-const { mint, isPending, isConfirming, isSuccess, error } = useMintTicket()
-
 const handleMint = async () => {
   try {
     await mint(
@@ -439,7 +437,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-
 
     </main>
   )
