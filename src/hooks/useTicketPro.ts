@@ -44,6 +44,9 @@ export function useEvent(eventId: bigint) {
     functionName: 'getEvent',
     args: [eventId],
     chainId: sepolia.id,
+    query: {
+      enabled: !!eventId
+    }
   })
 }
 
@@ -54,6 +57,10 @@ export function useEventCount() {
     abi: CONTRACT_ABI,
     functionName: 'eventCount',
     chainId: sepolia.id,
+    // PERBAIKAN: refetchInterval (huruf I besar)
+    query: {
+      refetchInterval: 10_000
+    }
   })
 }
 
@@ -64,9 +71,11 @@ export function useMyTickets() {
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: 'getTicketsByOwner',
-    args: [address as `0x${string}`],
-    enabled: !!address,
+    args: address ? [address] : undefined, // PERBAIKAN: Hindari as string jika address undefined
     chainId: sepolia.id,
+    query: {
+      enabled: !!address
+    }
   })
 }
 
@@ -78,6 +87,9 @@ export function useTicket(tokenId: bigint) {
     functionName: 'getTicket',
     args: [tokenId],
     chainId: sepolia.id,
+    query: {
+      enabled: !!tokenId
+    }
   })
 }
 
@@ -122,34 +134,27 @@ export function useUseTicket() {
 
 // Hook: Create Event
 export function useCreateEvent() {
-  const { writeContract, data: hash, isPending } = useWriteContract()
-  const { isSuccess } = useWaitForTransactionReceipt({ hash })
+  // 1. Panggil hook writeContract
+  const { writeContract, data: hash, isPending, isSuccess } = useWriteContract();
 
-  const createEvent = (
-    name: string,
-    date: string,
-    venue: string,
-    price: string,
-    maxSupply: bigint,
-    royalty: bigint
-  ) => {
+  // 2. Buat fungsi untuk memicu transaksi
+  const createEvent = (eventName: string, price: bigint, maxTickets: bigint) => {
     writeContract({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'createEvent',
-      args: [name, date, venue, parseEther(price), maxSupply, royalty],
-      chainId: sepolia.id,
-    })
-  }
+      args: [eventName, price, maxTickets],
+    });
+  };
 
-  return { createEvent, hash, isPending, isSuccess }
+  // 3. Return variabelnya agar bisa dipakai di UI
+  return { createEvent, hash, isPending, isSuccess };
 }
 
 // Helpers
-export function formatETH(wei: bigint): string {
-  return parseFloat(formatEther(wei)).toFixed(4)
-}
-
-export function ethToUSD(eth: number, ethPrice: number): string {
-  return (eth * ethPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+export function ethToUSD(eth: number, ethPrice: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(eth * ethPrice);
 }
