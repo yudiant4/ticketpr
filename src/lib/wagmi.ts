@@ -10,8 +10,8 @@ export const config = getDefaultConfig({
   chains: [sepolia],
   transports: {
     [sepolia.id]: http(
-      process.env.NEXT_PUBLIC_ALCHEMY_URL || '7QleYHIyZC-Axa0qwdrRI'
-      'https://eth-sepolia.g.alchemy.com/v2/7QlEyjH0...' // Pastikan ini link utuhnya ya kalau mau di-hardcode
+      process.env.NEXT_PUBLIC_ALCHEMY_URL ||
+      'https://eth-sepolia.g.alchemy.com/v2/7QleYHIyZC-Axa0qwdrRI' // Pastikan ini link utuhnya ya kalau mau di-hardcode
     ),
   },
   ssr: true,
