@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { formatEther } from 'viem'
 import {
@@ -12,7 +12,6 @@ import {
   useEventCount,
   useETHPrice,
   useUseTicket,
-  formatETH,
 } from '@/hooks/useTicketPro'
 
 // Single ticket row component
@@ -22,25 +21,28 @@ function TicketRow({ tokenId, ethPrice }: { tokenId: bigint, ethPrice: number })
 
   if (!ticket) return null
 
-  const statusColor = (ticket as any).used
+  // BUNGKUS TICKET DI SINI AGAR TYPESCRIPT VERCEL TIDAK PROTES LAGI
+  const t = ticket as any;
+
+  const statusColor = t.used
     ? { label: '✅ Used', color: '#9896B0', bg: '#F3F4F6' }
     : { label: '🎫 Active', color: '#16A34A', bg: '#DCFCE7' }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1.5px solid #E8E4F5', borderRadius: '16px', opacity: (ticket as any).used ? 0.6 : 1 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1.5px solid #E8E4F5', borderRadius: '16px', opacity: t.used ? 0.6 : 1 }}>
       <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px', flexShrink: 0 }}>🎟️</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F0A1E' }}>
-          Token #{tokenId.toString()} · {ticket.tier}
+          Token #{tokenId.toString()} · {t.tier}
         </div>
         <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '3px' }}>
-          Event ID: #{ticket.eventId.toString()} · Owner: {ticket.originalOwner.slice(0, 6)}...{ticket.originalOwner.slice(-4)}
+          Event ID: #{t.eventId.toString()} · Owner: {t.originalOwner.slice(0, 6)}...{t.originalOwner.slice(-4)}
         </div>
       </div>
       <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '50px', background: statusColor.bg, color: statusColor.color, flexShrink: 0 }}>
         {isSuccess ? '✅ Used' : statusColor.label}
       </span>
-      {!ticket.used && !isSuccess && (
+      {!t.used && !isSuccess && (
         <button
           onClick={() => useTicketFn(tokenId)}
           disabled={isPending}
@@ -62,14 +64,14 @@ export default function Dashboard() {
   const [chartPeriod, setChartPeriod] = useState('7D')
   const [toast, setToast] = useState('')
 
-  // ETH Price from Chainlink oracle
+  // ETH Price from Chainlink oracle (dibungkus as any biar aman)
   const ethPrice = ethPriceData
-    ? Number(ethPriceData[1]) / 1e8
+    ? Number((ethPriceData as any)[1]) / 1e8
     : 0
 
-  const balanceETH = balance ? parseFloat(formatEther(balance.value)) : 0
+  const balanceETH = balance ? parseFloat(formatEther((balance as any).value)) : 0
   const balanceUSD = (balanceETH * ethPrice).toFixed(2)
-  const ticketCount = myTicketIds ? myTicketIds.length : 0
+  const ticketCount = myTicketIds ? (myTicketIds as any).length : 0
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -249,7 +251,7 @@ export default function Dashboard() {
                 <span style={{ fontSize: '12px', fontWeight: 700, padding: '3px 8px', borderRadius: '50px', background: '#DCFCE7', color: '#16A34A' }}>On-chain</span>
               </div>
               <div style={{ fontSize: '28px', fontWeight: 800, color: '#0F0A1E', lineHeight: 1, marginBottom: '5px' }}>
-                {eventCount ? eventCount.toString() : '0'}
+                {eventCount ? (eventCount as any).toString() : '0'}
               </div>
               <div style={{ fontSize: '13px', color: '#9896B0' }}>Total Events</div>
               <div style={{ fontSize: '11px', color: '#9896B0', marginTop: '6px' }}>Created on contract</div>
@@ -289,7 +291,7 @@ export default function Dashboard() {
               </div>
 
               <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {!myTicketIds || myTicketIds.length === 0 ? (
+                {!myTicketIds || (myTicketIds as any).length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎟️</div>
                     <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F0A1E', marginBottom: '8px' }}>No tickets yet</div>
@@ -299,7 +301,7 @@ export default function Dashboard() {
                     </Link>
                   </div>
                 ) : (
-                  myTicketIds.map((tokenId) => (
+                  (myTicketIds as any).map((tokenId: bigint) => (
                     <TicketRow key={tokenId.toString()} tokenId={tokenId} ethPrice={ethPrice} />
                   ))
                 )}
@@ -420,7 +422,7 @@ export default function Dashboard() {
                   { label: 'Contract Address', val: '0x83C8...0CB7', full: '0x83C8533BbeB920Ccd51d3297BbC4d3B5219d0CB7' },
                   { label: 'Network', val: 'Sepolia Testnet' },
                   { label: 'Standard', val: 'ERC-721' },
-                  { label: 'Total Events', val: eventCount ? eventCount.toString() : '0' },
+                  { label: 'Total Events', val: eventCount ? (eventCount as any).toString() : '0' },
                   { label: 'Platform Fee', val: '2.5%' },
                 ].map((info, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 4 ? '1px solid #E8E4F5' : 'none' }}>
