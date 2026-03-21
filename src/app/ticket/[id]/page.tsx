@@ -37,7 +37,7 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
   const fee = tierPrice * qty * 0.025
   const total = (tierPrice * qty + fee + 0.003).toFixed(3)
 
-  const { mint, isPending, isConfirming, isSuccess, error } = useMintTicket()
+  const { mint, isPending, isConfirming, isSuccess, error, hash } = useMintTicket()
 
 const handleMint = async () => {
   try {
