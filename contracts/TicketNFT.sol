@@ -121,7 +121,9 @@ contract TicketNFT is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard, ERC298
         emit TicketUsed(_tokenId);
     }
 
-    function getEvent(uint256 _eventId) external view returns (Event memory) {
+    // --- PERBAIKAN NAMA FUNGSI DI SINI ---
+    // Mengubah 'getEvent' menjadi 'getEventDetails' agar tidak bentrok dengan fungsi internal ethers.js
+    function getEventDetails(uint256 _eventId) external view returns (Event memory) {
         return events[_eventId];
     }
 
