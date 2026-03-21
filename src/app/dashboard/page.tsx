@@ -22,7 +22,7 @@ function TicketRow({ tokenId, ethPrice }: { tokenId: bigint, ethPrice: number })
 
   if (!ticket) return null
 
-  const statusColor = ticket.used
+  const statusColor = (ticket as any).used
     ? { label: '✅ Used', color: '#9896B0', bg: '#F3F4F6' }
     : { label: '🎫 Active', color: '#16A34A', bg: '#DCFCE7' }
 
