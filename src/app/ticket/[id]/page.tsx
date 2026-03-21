@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useState } from 'react'
+import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
+import { useMintTicket, useEvent, useETHPrice } from '@/hooks/useTicketPro'
 
 const eventData: Record<string, any> = {
   '1': { emoji: '🎵', name: 'Electronic Horizon Festival', org: 'HorizonDAO', date: '28 Mar 2026', time: '18:00 WIB', venue: 'JIEXPO Hall A', city: 'Jakarta', chain: 'Ethereum', supply: 1000, sold: 850, price: 0.45, bg: 'linear-gradient(135deg,#667EEA,#764BA2)', tags: ['Music','EDM','Festival'] },
@@ -33,14 +36,29 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
   const fee = tierPrice * qty * 0.025
   const total = (tierPrice * qty + fee + 0.003).toFixed(3)
 
-  const handleMint = () => {
-    setMinting(true)
-    setTimeout(() => {
-      setMinting(false)
-      setMinted(true)
-      setShowModal(true)
-    }, 2000)
+  const { mint, isPending, isConfirming, isSuccess, error } = useMintTicket()
+
+const { mint, isPending, isConfirming, isSuccess, error } = useMintTicket()
+
+const handleMint = async () => {
+  try {
+    await mint(
+      BigInt(params.id),
+      tiers[selectedTier].name,
+      `https://ticketpro.vercel.app/api/metadata/${params.id}`,
+      (ev.price * tiers[selectedTier].price).toFixed(4)
+    )
+  } catch (err) {
+    console.error(err)
   }
+}
+
+// Show modal when confirmed on blockchain
+useEffect(() => {
+  if (isSuccess) {
+    setShowModal(true)
+  }
+}, [isSuccess])
 
   const supplyPct = Math.round(ev.sold / ev.supply * 100)
 
@@ -327,17 +345,31 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            {/* Mint Button */}
-            <button onClick={handleMint} disabled={minting}
-              style={{ width: '100%', padding: '16px', background: minting ? '#A855F7' : 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: minting ? 'not-allowed' : 'pointer', marginBottom: '12px', fontFamily: 'inherit', boxShadow: '0 6px 24px rgba(124,58,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-              {minting ? '⏳ Processing...' : '🎟️ Mint NFT Ticket'}
-            </button>
-
-            <button onClick={() => setWished(!wished)}
-              style={{ width: '100%', padding: '13px', background: 'white', color: wished ? '#EC4899' : '#7C3AED', border: `2px solid ${wished ? '#EC4899' : '#E8E4F5'}`, borderRadius: '14px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              {wished ? '❤️ Saved to Wishlist' : '🤍 Add to Wishlist'}
-            </button>
-
+            {/* Mint Button */}  
+<button
+  onClick={handleMint}
+  disabled={isPending || isConfirming || !isConnected}
+  style={{
+    width: '100%', padding: '16px',
+    background: isPending || isConfirming
+      ? '#A855F7'
+      : 'linear-gradient(135deg,#7C3AED,#A855F7)',
+    color: 'white', border: 'none', borderRadius: '14px',
+    fontSize: '16px', fontWeight: 800,
+    cursor: isPending || isConfirming ? 'not-allowed' : 'pointer',
+    marginBottom: '12px', fontFamily: 'inherit',
+    boxShadow: '0 6px 24px rgba(124,58,237,0.4)',
+    display: 'flex', alignItems: 'center',
+    justifyContent: 'center', gap: '10px'
+  }}>
+  {!isConnected
+    ? '🔗 Connect Wallet First'
+    : isPending
+    ? '⏳ Waiting for approval...'
+    : isConfirming
+    ? '⛓️ Confirming on blockchain...'
+    : '🎟️ Mint NFT Ticket'}
+</button>
             {/* Trust */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '16px', borderTop: '1px solid #E8E4F5' }}>
               {['🔐 Smart contract audited by CertiK', '⚡ Instant delivery to your wallet', '🔄 Tradeable on secondary market', '🛡️ Anti-fraud blockchain verification'].map((t, i) => (
@@ -385,17 +417,29 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
           <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '28px', padding: '40px', width: '440px', textAlign: 'center', boxShadow: '0 32px 80px rgba(0,0,0,0.25)' }}>
             <div style={{ fontSize: '72px', marginBottom: '16px' }}>🎉</div>
             <div style={{ fontSize: '26px', fontWeight: 800, color: '#0F0A1E', marginBottom: '8px' }}>Mint Successful!</div>
-            <p style={{ fontSize: '14px', color: '#9896B0', lineHeight: 1.6, marginBottom: '24px' }}>Your NFT ticket has been minted and sent to your wallet. See you at the event!</p>
-            <div style={{ background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '12px', padding: '14px', marginBottom: '24px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 700, color: '#7C3AED' }}>
-              Token ID: #TKP-{params.id.padStart(4,'0')} · 0x7C3AED...F97316
-            </div>
+            <p style={{ fontSize: '14px', color: '#9896B0', lineHeight: 1.6, marginBottom: '24px' }}>
+              Your NFT ticket has been minted on Sepolia blockchain!
+            </p>
+            {hash && (
+              <a
+                href={`https://sepolia.etherscan.io/tx/${hash}`}
+                target="_blank"
+                style={{ display: 'block', background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '12px', padding: '14px', marginBottom: '24px', fontFamily: 'monospace', fontSize: '12px', fontWeight: 700, color: '#7C3AED', textDecoration: 'none', wordBreak: 'break-all' }}>
+                🔍 View on Etherscan: {hash.slice(0, 20)}...
+              </a>
+            )}
             <div style={{ display: 'flex', gap: '12px' }}>
-              <Link href="/dashboard" style={{ flex: 1, padding: '13px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>View My Ticket</Link>
-              <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '13px', background: 'white', color: '#4B4869', border: '1.5px solid #E8E4F5', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Close</button>
+              <Link href="/dashboard" style={{ flex: 1, padding: '13px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', borderRadius: '12px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                View My Ticket
+              </Link>
+              <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '13px', background: 'white', color: '#4B4869', border: '1.5px solid #E8E4F5', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
+
 
     </main>
   )
