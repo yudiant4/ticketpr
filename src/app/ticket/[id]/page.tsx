@@ -23,6 +23,7 @@ const tiers = [
 ]
 
 export default function TicketDetail({ params }: { params: { id: string } }) {
+  const { isConnected } = useAccount();
   const ev = eventData[params.id] || eventData['1']
   const [activeTab, setActiveTab] = useState('about')
   const [selectedTier, setSelectedTier] = useState(0)
