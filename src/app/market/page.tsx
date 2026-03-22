@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi'
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseEther, formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/contracts/config'
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contracts'
 
 interface Listing {
     tokenId: string
