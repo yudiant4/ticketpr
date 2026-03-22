@@ -24,7 +24,7 @@ export async function uploadMetadataToIPFS(metadata: object): Promise<string> {
 // Upload image to IPFS
 export async function uploadImageToIPFS(imageBuffer: Buffer, filename: string): Promise<string> {
     const formData = new FormData()
-    const blob = new Blob([imageBuffer])
+    const blob = new Blob([new Uint8Array(imageBuffer)])
     formData.append('file', blob, filename)
     formData.append('pinataMetadata', JSON.stringify({ name: filename }))
 
