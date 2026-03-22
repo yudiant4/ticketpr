@@ -2,18 +2,17 @@
 
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
-import { useMintTicket, useEvent, useETHPrice } from '@/hooks/useTicketPro'
+import { useMintTicket } from '@/hooks/useTicketPro'
 
 const eventData: Record<string, any> = {
-  '1': { emoji: '🎵', name: 'Electronic Horizon Festival', org: 'HorizonDAO', date: '28 Mar 2026', time: '18:00 WIB', venue: 'JIEXPO Hall A', city: 'Jakarta', chain: 'Ethereum', supply: 1000, sold: 850, price: 0.45, bg: 'linear-gradient(135deg,#667EEA,#764BA2)', tags: ['Music','EDM','Festival'] },
-  '2': { emoji: '🎤', name: 'Neon City Rave Vol. 3', org: 'NeonCollective', date: '5 Apr 2026', time: '20:00 WIB', venue: 'Potato Head', city: 'Bali', chain: 'Polygon', supply: 800, sold: 620, price: 0.18, bg: 'linear-gradient(135deg,#F093FB,#F5576C)', tags: ['Rave','Techno'] },
-  '3': { emoji: '💻', name: 'Block Summit 2026', org: 'BlockDAO', date: '12 Apr 2026', time: '09:00 WIB', venue: 'Grand City Hall', city: 'Surabaya', chain: 'Base', supply: 2000, sold: 310, price: 0.05, bg: 'linear-gradient(135deg,#4FACFE,#00F2FE)', tags: ['Web3','Conference'] },
-  '4': { emoji: '🎨', name: 'Metamorphosis Art Fair', org: 'ArtOnChain', date: '19 Apr 2026', time: '10:00 WIB', venue: 'Gedung Sate', city: 'Bandung', chain: 'Ethereum', supply: 600, sold: 450, price: 0.30, bg: 'linear-gradient(135deg,#43E97B,#38F9D7)', tags: ['Art','Exhibition'] },
-  '5': { emoji: '🎭', name: 'Web3 Culture Festival', org: 'CultureDAO', date: '25 Apr 2026', time: '14:00 WIB', venue: 'Prambanan Area', city: 'Yogyakarta', chain: 'Polygon', supply: 1500, sold: 980, price: 0.22, bg: 'linear-gradient(135deg,#FA709A,#FEE140)', tags: ['Culture','Web3'] },
-  '6': { emoji: '🚀', name: 'DeFi Launchpad Night', org: 'DeFiGuild', date: '2 Mei 2026', time: '19:00 WIB', venue: 'The Westin Jakarta', city: 'Jakarta', chain: 'Base', supply: 500, sold: 200, price: 0.12, bg: 'linear-gradient(135deg,#A18CD1,#FBC2EB)', tags: ['DeFi','Networking'] },
+  '1': { emoji: '🎵', name: 'Electronic Horizon Festival', org: 'HorizonDAO', date: '28 Mar 2026', time: '18:00 WIB', venue: 'JIEXPO Hall A', city: 'Jakarta', chain: 'Ethereum', supply: 1000, sold: 850, price: 0.01, bg: 'linear-gradient(135deg,#667EEA,#764BA2)', tags: ['Music','EDM','Festival'] },
+  '2': { emoji: '🎤', name: 'Neon City Rave Vol. 3', org: 'NeonCollective', date: '5 Apr 2026', time: '20:00 WIB', venue: 'Potato Head', city: 'Bali', chain: 'Polygon', supply: 800, sold: 620, price: 0.008, bg: 'linear-gradient(135deg,#F093FB,#F5576C)', tags: ['Rave','Techno'] },
+  '3': { emoji: '💻', name: 'Block Summit 2026', org: 'BlockDAO', date: '12 Apr 2026', time: '09:00 WIB', venue: 'Grand City Hall', city: 'Surabaya', chain: 'Base', supply: 2000, sold: 310, price: 0.005, bg: 'linear-gradient(135deg,#4FACFE,#00F2FE)', tags: ['Web3','Conference'] },
+  '4': { emoji: '🎨', name: 'Metamorphosis Art Fair', org: 'ArtOnChain', date: '19 Apr 2026', time: '10:00 WIB', venue: 'Gedung Sate', city: 'Bandung', chain: 'Ethereum', supply: 600, sold: 450, price: 0.007, bg: 'linear-gradient(135deg,#43E97B,#38F9D7)', tags: ['Art','Exhibition'] },
+  '5': { emoji: '🎭', name: 'Web3 Culture Festival', org: 'CultureDAO', date: '25 Apr 2026', time: '14:00 WIB', venue: 'Prambanan Area', city: 'Yogyakarta', chain: 'Polygon', supply: 1500, sold: 980, price: 0.006, bg: 'linear-gradient(135deg,#FA709A,#FEE140)', tags: ['Culture','Web3'] },
+  '6': { emoji: '🚀', name: 'DeFi Launchpad Night', org: 'DeFiGuild', date: '2 Mei 2026', time: '19:00 WIB', venue: 'The Westin Jakarta', city: 'Jakarta', chain: 'Base', supply: 500, sold: 200, price: 0.005, bg: 'linear-gradient(135deg,#A18CD1,#FBC2EB)', tags: ['DeFi','Networking'] },
 }
 
 const tiers = [
@@ -23,43 +22,76 @@ const tiers = [
 ]
 
 export default function TicketDetail({ params }: { params: { id: string } }) {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount()
   const ev = eventData[params.id] || eventData['1']
   const [activeTab, setActiveTab] = useState('about')
   const [selectedTier, setSelectedTier] = useState(0)
   const [qty, setQty] = useState(1)
   const [wished, setWished] = useState(false)
-  const [minted, setMinted] = useState(false)
-  const [minting, setMinting] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [mintError, setMintError] = useState('')
+
+  const { mint, hash, isPending, isConfirming, isSuccess, error } = useMintTicket()
 
   const tierPrice = ev.price * tiers[selectedTier].price
   const fee = tierPrice * qty * 0.025
-  const total = (tierPrice * qty + fee + 0.003).toFixed(3)
-
-  const { mint, isPending, isConfirming, isSuccess, error, hash } = useMintTicket()
-
-const handleMint = async () => {
-  try {
-    await mint(
-      BigInt(params.id),
-      tiers[selectedTier].name,
-      `https://ticketpro.vercel.app/api/metadata/${params.id}`,
-      (ev.price * tiers[selectedTier].price).toFixed(4)
-    )
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-// Show modal when confirmed on blockchain
-useEffect(() => {
-  if (isSuccess) {
-    setShowModal(true)
-  }
-}, [isSuccess])
-
+  const total = (tierPrice * qty + fee + 0.003).toFixed(4)
   const supplyPct = Math.round(ev.sold / ev.supply * 100)
+
+  // ✅ FIX: Show modal when blockchain confirms
+  useEffect(() => {
+    if (isSuccess) {
+      setShowModal(true)
+      setMintError('')
+    }
+  }, [isSuccess])
+
+  // ✅ FIX: Show error to user
+  useEffect(() => {
+    if (error) {
+      const msg = (error as any)?.message || ''
+      if (msg.includes('User rejected') || msg.includes('user rejected')) {
+        setMintError('❌ Transaction rejected in MetaMask.')
+      } else if (msg.includes('insufficient funds')) {
+        setMintError('❌ Insufficient ETH balance!')
+      } else if (msg.includes('execution reverted')) {
+        setMintError('❌ Contract error. Check event is active and supply available.')
+      } else {
+        setMintError('❌ Mint failed. Please try again.')
+      }
+    }
+  }, [error])
+
+  const handleMint = async () => {
+    if (!isConnected) {
+      setMintError('Please connect your wallet first!')
+      return
+    }
+
+    setMintError('')
+
+    try {
+      // ✅ FIX: pass semua 7 args yang dibutuhkan hook
+      await mint(
+        BigInt(params.id),              // eventId
+        tiers[selectedTier].name,       // tier
+        ev.name,                        // eventName
+        ev.date,                        // date
+        ev.venue,                       // venue
+        ev.city,                        // city
+        tierPrice.toFixed(4)            // price in ETH — sesuai harga tier
+      )
+    } catch (err: any) {
+      const msg = err?.message || ''
+      if (msg.includes('User rejected') || msg.includes('user rejected')) {
+        setMintError('❌ Transaction rejected in MetaMask.')
+      } else if (msg.includes('insufficient funds')) {
+        setMintError('❌ Insufficient ETH balance!')
+      } else {
+        setMintError('❌ Mint failed. Please try again.')
+      }
+    }
+  }
 
   return (
     <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FAFAFF', color: '#0F0A1E' }}>
@@ -73,6 +105,7 @@ useEffect(() => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
           <Link href="/" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Home</Link>
           <Link href="/events" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Explore</Link>
+          <Link href="/market" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
           <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Dashboard</Link>
         </div>
         <ConnectButton />
@@ -94,7 +127,6 @@ useEffect(() => {
 
         {/* LEFT */}
         <div>
-          {/* Ticket Visual */}
           <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '24px', overflow: 'hidden', marginBottom: '24px', boxShadow: '0 4px 24px rgba(124,58,237,0.12)' }}>
             <div style={{ height: '280px', background: ev.bg, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.1) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }} />
@@ -103,7 +135,6 @@ useEffect(() => {
               <span style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.9)', borderRadius: '50px', padding: '5px 14px', fontSize: '12px', fontWeight: 700, color: '#7C3AED' }}>{ev.chain}</span>
             </div>
 
-            {/* NFT Card */}
             <div style={{ padding: '20px 28px 0' }}>
               <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '16px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
                 <div style={{ width: '50px', height: '50px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>{ev.emoji}</div>
@@ -118,14 +149,12 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Dashed Divider */}
             <div style={{ padding: '20px 28px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ flex: 1, borderTop: '2px dashed #E8E4F5' }} />
               <span style={{ fontSize: '10px', fontWeight: 700, color: '#9896B0', letterSpacing: '0.15em', textTransform: 'uppercase' }}>✂ tear here</span>
               <div style={{ flex: 1, borderTop: '2px dashed #E8E4F5' }} />
             </div>
 
-            {/* Info Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', padding: '0 28px 24px' }}>
               {[
                 { label: '📅 Date', val: ev.date, sub: 'Saturday' },
@@ -143,7 +172,6 @@ useEffect(() => {
               ))}
             </div>
 
-            {/* QR Row */}
             <div style={{ padding: '16px 28px 24px', display: 'flex', alignItems: 'center', gap: '20px', background: '#FAFAFF' }}>
               <div style={{ width: '72px', height: '72px', background: 'white', border: '1px solid #E8E4F5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '44px', flexShrink: 0 }}>📱</div>
               <div>
@@ -171,7 +199,7 @@ useEffect(() => {
                   <div style={{ fontSize: '22px', fontWeight: 800, marginBottom: '6px' }}>{ev.name}</div>
                   <div style={{ fontSize: '14px', color: '#7C3AED', fontWeight: 600, marginBottom: '16px' }}>Organized by {ev.org} · Verified ✅</div>
                   <p style={{ fontSize: '14px', lineHeight: 1.8, color: '#4B4869', marginBottom: '24px' }}>
-                    One of the biggest events in Indonesia returns for 2026! Featuring world-class performers, stunning art installations, and fully on-chain NFT ticketing. Every ticket is a unique NFT that transforms into a collectible keepsake after the event — stored forever on {ev.chain}.
+                    One of the biggest events in Indonesia returns for 2026! Featuring world-class performers, stunning art installations, and fully on-chain NFT ticketing. Every ticket is a unique NFT stored forever on {ev.chain}.
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px' }}>
                     {[
@@ -210,7 +238,7 @@ useEffect(() => {
                         </div>
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
                           <div style={{ fontSize: '11px', color: '#9896B0' }}>{tier.sold}/{tier.total} sold</div>
-                          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F0A1E' }}>{(ev.price * tier.price).toFixed(2)} ETH</div>
+                          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F0A1E' }}>{(ev.price * tier.price).toFixed(4)} ETH</div>
                           <div style={{ width: '100px', height: '4px', background: '#E5E7EB', borderRadius: '99px', marginTop: '6px', marginLeft: 'auto' }}>
                             <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg,#7C3AED,#A855F7)', width: `${Math.round(tier.sold/tier.total*100)}%` }} />
                           </div>
@@ -243,20 +271,17 @@ useEffect(() => {
               {activeTab === 'history' && (
                 <div>
                   {[
-                    { icon: '🎫', action: 'Minted by', addr: '0x3f2A...9B4c', time: '2 hours ago', type: 'Mint', price: '0.45 ETH', typeColor: '#16A34A', typeBg: '#DCFCE7' },
-                    { icon: '💸', action: 'Sold by', addr: '0x7A1D...2E5f', time: '5 hours ago', type: 'Sale', price: '0.55 ETH', typeColor: '#D97706', typeBg: '#FEF3C7' },
+                    { icon: '🎫', action: 'Minted by', addr: '0x3f2A...9B4c', time: '2 hours ago', type: 'Mint', price: `${ev.price} ETH`, typeColor: '#16A34A', typeBg: '#DCFCE7' },
+                    { icon: '💸', action: 'Sold by', addr: '0x7A1D...2E5f', time: '5 hours ago', type: 'Sale', price: `${(ev.price * 1.2).toFixed(4)} ETH`, typeColor: '#D97706', typeBg: '#FEF3C7' },
                     { icon: '🔄', action: 'Transferred to', addr: '0x9C3B...4A1d', time: '1 day ago', type: 'Transfer', price: '—', typeColor: '#2563EB', typeBg: '#EFF6FF' },
-                    { icon: '🎫', action: 'Minted by', addr: '0x1E8F...7C2a', time: '2 days ago', type: 'Mint', price: '0.45 ETH', typeColor: '#16A34A', typeBg: '#DCFCE7' },
                   ].map((h, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 0', borderBottom: i < 3 ? '1px solid #E8E4F5' : 'none' }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 0', borderBottom: i < 2 ? '1px solid #E8E4F5' : 'none' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{h.icon}</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F0A1E' }}>{h.action} <span style={{ color: '#7C3AED', fontFamily: 'monospace' }}>{h.addr}</span></div>
                         <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '2px' }}>{h.time} · <span style={{ background: h.typeBg, color: h.typeColor, fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '50px' }}>{h.type}</span></div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F0A1E' }}>{h.price}</div>
-                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F0A1E' }}>{h.price}</div>
                     </div>
                   ))}
                 </div>
@@ -275,8 +300,8 @@ useEffect(() => {
             </div>
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>Current Price</div>
-              <div style={{ fontSize: '36px', fontWeight: 800, color: 'white', lineHeight: 1 }}>{(ev.price * tiers[selectedTier].price).toFixed(2)} ETH</div>
-              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>≈ ${(ev.price * tiers[selectedTier].price * 3600).toFixed(0)} USD</div>
+              <div style={{ fontSize: '36px', fontWeight: 800, color: 'white', lineHeight: 1 }}>{tierPrice.toFixed(4)} ETH</div>
+              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>≈ ${(tierPrice * 3600).toFixed(2)} USD</div>
             </div>
           </div>
 
@@ -294,7 +319,7 @@ useEffect(() => {
             </div>
 
             {/* Selected Tier */}
-            <div style={{ background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', cursor: 'pointer' }} onClick={() => setActiveTab('tiers')}>
+            <div onClick={() => setActiveTab('tiers')} style={{ background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', cursor: 'pointer' }}>
               <div>
                 <div style={{ fontSize: '12px', color: '#9896B0', fontWeight: 500, marginBottom: '3px' }}>Selected Tier</div>
                 <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F0A1E' }}>{tiers[selectedTier].icon} {tiers[selectedTier].name}</div>
@@ -318,9 +343,9 @@ useEffect(() => {
             {/* Price Breakdown */}
             <div style={{ background: '#FAFAFF', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
               {[
-                { label: 'Price per ticket', val: `${tierPrice.toFixed(3)} ETH` },
+                { label: 'Price per ticket', val: `${tierPrice.toFixed(4)} ETH` },
                 { label: 'Quantity', val: `× ${qty}` },
-                { label: 'Platform fee (2.5%)', val: `${fee.toFixed(3)} ETH` },
+                { label: 'Platform fee (2.5%)', val: `${fee.toFixed(4)} ETH` },
                 { label: 'Gas estimate', val: '~0.003 ETH' },
               ].map((row, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
@@ -335,43 +360,62 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Wallet */}
+            {/* Wallet Info */}
             <div style={{ background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#4ADE80', flexShrink: 0 }} />
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: isConnected ? '#4ADE80' : '#9896B0', flexShrink: 0 }} />
               <div>
-                <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#7C3AED' }}>0x3f2A...9B4c</div>
-                <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '2px' }}>Balance: 2.84 ETH</div>
+                <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#7C3AED' }}>
+                  {isConnected && address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Not connected'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '2px' }}>
+                  {isConnected ? 'Sepolia Testnet' : 'Connect wallet to mint'}
+                </div>
               </div>
             </div>
 
-            {/* Mint Button */}  
-<button
-  onClick={handleMint}
-  disabled={isPending || isConfirming || !isConnected}
-  style={{
-    width: '100%', padding: '16px',
-    background: isPending || isConfirming
-      ? '#A855F7'
-      : 'linear-gradient(135deg,#7C3AED,#A855F7)',
-    color: 'white', border: 'none', borderRadius: '14px',
-    fontSize: '16px', fontWeight: 800,
-    cursor: isPending || isConfirming ? 'not-allowed' : 'pointer',
-    marginBottom: '12px', fontFamily: 'inherit',
-    boxShadow: '0 6px 24px rgba(124,58,237,0.4)',
-    display: 'flex', alignItems: 'center',
-    justifyContent: 'center', gap: '10px'
-  }}>
-  {!isConnected
-    ? '🔗 Connect Wallet First'
-    : isPending
-    ? '⏳ Waiting for approval...'
-    : isConfirming
-    ? '⛓️ Confirming on blockchain...'
-    : '🎟️ Mint NFT Ticket'}
-</button>
-            {/* Trust */}
+            {/* ✅ Error Message */}
+            {mintError && (
+              <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: '10px', padding: '12px 16px', marginBottom: '12px', fontSize: '13px', color: '#DC2626', fontWeight: 600 }}>
+                {mintError}
+              </div>
+            )}
+
+            {/* ✅ Mint Button */}
+            <button
+              onClick={handleMint}
+              disabled={isPending || isConfirming}
+              style={{
+                width: '100%', padding: '16px',
+                background: !isConnected
+                  ? '#E8E4F5'
+                  : isPending || isConfirming
+                  ? '#A855F7'
+                  : 'linear-gradient(135deg,#7C3AED,#A855F7)',
+                color: !isConnected ? '#9896B0' : 'white',
+                border: 'none', borderRadius: '14px',
+                fontSize: '16px', fontWeight: 800,
+                cursor: isPending || isConfirming ? 'not-allowed' : 'pointer',
+                marginBottom: '12px', fontFamily: 'inherit',
+                boxShadow: isConnected ? '0 6px 24px rgba(124,58,237,0.4)' : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                transition: 'all 0.2s',
+              }}>
+              {!isConnected
+                ? '🔗 Connect Wallet First'
+                : isPending
+                ? '⏳ Waiting for MetaMask...'
+                : isConfirming
+                ? '⛓️ Confirming on blockchain...'
+                : `🎟️ Mint for ${tierPrice.toFixed(4)} ETH`}
+            </button>
+
+            <button onClick={() => setWished(!wished)}
+              style={{ width: '100%', padding: '13px', background: 'white', color: wished ? '#EC4899' : '#7C3AED', border: `2px solid ${wished ? '#EC4899' : '#E8E4F5'}`, borderRadius: '14px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginBottom: '20px', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {wished ? '❤️ Saved to Wishlist' : '🤍 Add to Wishlist'}
+            </button>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '16px', borderTop: '1px solid #E8E4F5' }}>
-              {['🔐 Smart contract audited by CertiK', '⚡ Instant delivery to your wallet', '🔄 Tradeable on secondary market', '🛡️ Anti-fraud blockchain verification'].map((t, i) => (
+              {['🔐 Smart contract on Sepolia blockchain', '⚡ Instant delivery to your wallet', '🔄 Tradeable on secondary market', '🛡️ Anti-fraud blockchain verification'].map((t, i) => (
                 <div key={i} style={{ fontSize: '12px', color: '#9896B0', display: 'flex', alignItems: 'center', gap: '8px' }}>{t}</div>
               ))}
             </div>
@@ -417,19 +461,17 @@ useEffect(() => {
             <div style={{ fontSize: '72px', marginBottom: '16px' }}>🎉</div>
             <div style={{ fontSize: '26px', fontWeight: 800, color: '#0F0A1E', marginBottom: '8px' }}>Mint Successful!</div>
             <p style={{ fontSize: '14px', color: '#9896B0', lineHeight: 1.6, marginBottom: '24px' }}>
-              Your NFT ticket has been minted on Sepolia blockchain!
+              Your NFT ticket is now on Sepolia blockchain! Check your wallet and dashboard.
             </p>
             {hash && (
-              <a
-                href={`https://sepolia.etherscan.io/tx/${hash}`}
-                target="_blank"
+              <a href={`https://sepolia.etherscan.io/tx/${hash}`} target="_blank"
                 style={{ display: 'block', background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '12px', padding: '14px', marginBottom: '24px', fontFamily: 'monospace', fontSize: '12px', fontWeight: 700, color: '#7C3AED', textDecoration: 'none', wordBreak: 'break-all' }}>
-                🔍 View on Etherscan: {hash.slice(0, 20)}...
+                🔍 Tx: {hash.slice(0, 24)}...
               </a>
             )}
             <div style={{ display: 'flex', gap: '12px' }}>
               <Link href="/dashboard" style={{ flex: 1, padding: '13px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', borderRadius: '12px', fontSize: '14px', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                View My Ticket
+                View My Tickets →
               </Link>
               <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '13px', background: 'white', color: '#4B4869', border: '1.5px solid #E8E4F5', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Close
@@ -438,7 +480,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-
     </main>
   )
 }

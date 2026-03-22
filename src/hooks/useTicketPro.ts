@@ -1,42 +1,55 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useBalance } from 'wagmi'
+import {
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useAccount,
+  useBalance,
+} from 'wagmi'
 import { parseEther, formatEther } from 'viem'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import { sepolia } from 'wagmi/chains'
 
-// Hook: Get ETH Price
 export function useETHPrice() {
   return useReadContract({
     address: '0x694AA1769357215DE4FAC081bf1f309aDC325306' as `0x${string}`,
-    abi: [
-      {
-        inputs: [],
-        name: 'latestRoundData',
-        outputs: [
-          { name: 'roundId', type: 'uint80' },
-          { name: 'answer', type: 'int256' },
-          { name: 'startedAt', type: 'uint256' },
-          { name: 'updatedAt', type: 'uint256' },
-          { name: 'answeredInRound', type: 'uint80' },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-      },
-    ],
+    abi: [{
+      inputs: [],
+      name: 'latestRoundData',
+      outputs: [
+        { name: 'roundId', type: 'uint80' },
+        { name: 'answer', type: 'int256' },
+        { name: 'startedAt', type: 'uint256' },
+        { name: 'updatedAt', type: 'uint256' },
+        { name: 'answeredInRound', type: 'uint80' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    }],
     functionName: 'latestRoundData',
     chainId: sepolia.id,
+    query: { refetchInterval: 30_000 },
   })
 }
 
-// Hook: Get Wallet Balance
 export function useWalletBalance() {
   const { address } = useAccount()
   return useBalance({
     address,
     chainId: sepolia.id,
+    query: { enabled: !!address, refetchInterval: 10_000 },
   })
 }
 
-// Hook: Get Event Data from Contract
+export function useEventCount() {
+  return useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'eventCount',
+    chainId: sepolia.id,
+    query: { refetchInterval: 10_000 },
+  })
+}
+
 export function useEvent(eventId: bigint) {
   return useReadContract({
     address: CONTRACT_ADDRESS,
@@ -44,42 +57,22 @@ export function useEvent(eventId: bigint) {
     functionName: 'getEvent',
     args: [eventId],
     chainId: sepolia.id,
-    query: {
-      enabled: !!eventId
-    }
+    query: { enabled: eventId > BigInt(0) },
   })
 }
 
-// Hook: Get Event Count
-export function useEventCount() {
-  return useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: CONTRACT_ABI,
-    functionName: 'eventCount',
-    chainId: sepolia.id,
-    // PERBAIKAN: refetchInterval (huruf I besar)
-    query: {
-      refetchInterval: 10_000
-    }
-  })
-}
-
-// Hook: Get Tickets by Owner
 export function useMyTickets() {
   const { address } = useAccount()
   return useReadContract({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: 'getTicketsByOwner',
-    args: address ? [address] : undefined, // PERBAIKAN: Hindari as string jika address undefined
+    args: address ? [address as `0x${string}`] : undefined,
     chainId: sepolia.id,
-    query: {
-      enabled: !!address
-    }
+    query: { enabled: !!address, refetchInterval: 10_000 },
   })
 }
 
-// Hook: Get Single Ticket
 export function useTicket(tokenId: bigint) {
   return useReadContract({
     address: CONTRACT_ADDRESS,
@@ -87,20 +80,43 @@ export function useTicket(tokenId: bigint) {
     functionName: 'getTicket',
     args: [tokenId],
     chainId: sepolia.id,
-    query: {
-      enabled: !!tokenId
-    }
+    query: { enabled: tokenId > BigInt(0) },
   })
 }
 
-// Hook: Mint Ticket
 export function useMintTicket() {
-  const { writeContract, data: hash, isPending, error } = useWriteContract()
-
+  const { writeContractAsync, data: hash, isPending, error, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  const mint = async (eventId: bigint, tier: string, tokenURI: string, price: string) => {
-    writeContract({
+  const mint = async (
+    eventId: bigint,
+    tier: string,
+    eventName: string,
+    date: string,
+    venue: string,
+    city: string,
+    price: string
+  ) => {
+    let tokenURI = `https://ticketpr.vercel.app/api/ticket-image/${eventId}`
+
+    try {
+      const metadataRes = await fetch('/api/metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: eventId.toString(),
+          eventName, date, venue, city, tier,
+          tokenId: Date.now(),
+          ownerAddress: 'pending',
+        }),
+      })
+      const metadataData = await metadataRes.json()
+      if (metadataData.success) tokenURI = metadataData.ipfsUri
+    } catch {
+      console.warn('IPFS failed, using fallback')
+    }
+
+    const txHash = await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'mintTicket',
@@ -108,19 +124,19 @@ export function useMintTicket() {
       value: parseEther(price),
       chainId: sepolia.id,
     })
+
+    return txHash
   }
 
-  return { mint, hash, isPending, isConfirming, isSuccess, error }
+  return { mint, hash, isPending, isConfirming, isSuccess, error, reset }
 }
 
-// Hook: Use Ticket (at gate)
 export function useUseTicket() {
-  const { writeContract, data: hash, isPending } = useWriteContract()
-
+  const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
   const { isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  const useTicketFn = (tokenId: bigint) => {
-    writeContract({
+  const useTicketFn = async (tokenId: bigint) => {
+    await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'useTicket',
@@ -129,32 +145,48 @@ export function useUseTicket() {
     })
   }
 
-  return { useTicketFn, hash, isPending, isSuccess }
+  return { useTicketFn, hash, isPending, isSuccess, error }
 }
 
-// Hook: Create Event
 export function useCreateEvent() {
-  // 1. Panggil hook writeContract
-  const { writeContract, data: hash, isPending, isSuccess } = useWriteContract();
+  const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  // 2. Buat fungsi untuk memicu transaksi
-  const createEvent = (eventName: string, price: bigint, maxTickets: bigint) => {
-    writeContract({
+  const createEvent = async (
+    name: string,
+    date: string,
+    venue: string,
+    price: string,
+    maxSupply: bigint,
+    royaltyPercent: bigint
+  ) => {
+    return await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'createEvent',
-      args: [eventName, price, maxTickets],
-    });
-  };
+      args: [name, date, venue, parseEther(price), maxSupply, royaltyPercent],
+      chainId: sepolia.id,
+    })
+  }
 
-  // 3. Return variabelnya agar bisa dipakai di UI
-  return { createEvent, hash, isPending, isSuccess };
+  return { createEvent, hash, isPending, isConfirming, isSuccess, error }
 }
 
-// Helpers
-export function ethToUSD(eth: number, ethPrice: number) {
+export function formatETH(wei: bigint): string {
+  return parseFloat(formatEther(wei)).toFixed(4)
+}
+
+export function ethToUSD(eth: number, ethPrice: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-  }).format(eth * ethPrice);
+  }).format(eth * ethPrice)
+}
+
+export function shortenAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
+export function weiToEth(wei: bigint): number {
+  return parseFloat(formatEther(wei))
 }
