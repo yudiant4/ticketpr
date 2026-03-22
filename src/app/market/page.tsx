@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi'
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseEther, formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/contracts/config'
 
 interface Listing {
     tokenId: string
@@ -99,10 +99,9 @@ export default function MarketPage() {
                     Ticket<span style={{ color: '#7C3AED' }}>Pro</span>
                 </Link>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-                    <Link href="/" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Home</Link>
-                    <Link href="/events" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Explore</Link>
-                    <Link href="/market" style={{ fontSize: '14px', fontWeight: 700, color: '#7C3AED', textDecoration: 'none' }}>Market</Link>
-                    <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Dashboard</Link>
+                    <Link href="/create-event" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Create Event</Link>
+<Link href="/market" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
+<Link href="/verify" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Verify</Link>
                 </div>
                 <ConnectButton />
             </nav>

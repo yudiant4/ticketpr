@@ -114,10 +114,9 @@ export default function Dashboard() {
 
       {/* SIDEBAR */}
       <aside style={{ width: '260px', flexShrink: 0, background: 'white', borderRight: '1px solid #E8E4F5', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50, overflowY: 'auto' }}>
-        <Link href="/" style={{ padding: '28px 24px 20px', borderBottom: '1px solid #E8E4F5', display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <div style={{ width: '38px', height: '38px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🎟️</div>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F0A1E' }}>Ticket<span style={{ color: '#7C3AED' }}>Pro</span></div>
-        </Link>
+        <Link href="/create-event" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Create Event</Link>
+<Link href="/market" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
+<Link href="/verify" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Verify</Link>
 
         {/* Profile — Real Wallet Data */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #E8E4F5' }}>
