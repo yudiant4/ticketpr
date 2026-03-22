@@ -5,6 +5,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useMintTicket } from '@/hooks/useTicketPro'
+import { useEvent, useEventCount } from '@/hooks/useTicketPro'
+import { formatEther } from 'viem'
 
 const eventData: Record<string, any> = {
   '1': { emoji: '🎵', name: 'Electronic Horizon Festival', org: 'HorizonDAO', date: '28 Mar 2026', time: '18:00 WIB', venue: 'JIEXPO Hall A', city: 'Jakarta', chain: 'Ethereum', supply: 1000, sold: 850, price: 0.01, bg: 'linear-gradient(135deg,#667EEA,#764BA2)', tags: ['Music','EDM','Festival'] },
@@ -31,9 +33,13 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
   const [showModal, setShowModal] = useState(false)
   const [mintError, setMintError] = useState('')
 
+const { data: contractEvent } = useEvent(BigInt(params.id))
+const contractPrice = contractEvent
+  ? parseFloat(formatEther((contractEvent as any).price))
+  : ev.price
   const { mint, hash, isPending, isConfirming, isSuccess, error } = useMintTicket()
 
-  const tierPrice = ev.price * tiers[selectedTier].price
+  const tierPrice = contractPrice * tiers[selectedTier].price
   const fee = tierPrice * qty * 0.025
   const total = (tierPrice * qty + fee + 0.003).toFixed(4)
   const supplyPct = Math.round(ev.sold / ev.supply * 100)
