@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/contracts/config'
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 
 export default function VerifyPage() {
   const { isConnected } = useAccount()
