@@ -4,6 +4,17 @@ import { useState, useEffect } from 'react'
 import { useReadContract } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
+
+export default function VerifyPage() {
+  return (
+    <main>
+      <Navbar />
+      {/* ... Konten Verify ... */}
+      <Footer />
+    </main>
+  )
+}
 
 export default function VerifyPage() {
   const [tokenId, setTokenId] = useState('')
