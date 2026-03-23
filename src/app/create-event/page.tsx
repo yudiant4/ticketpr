@@ -5,6 +5,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useCreateEvent } from '@/hooks/useTicketPro'
+import { parseEther } from "viem";
 
 export default function CreateEventPage() {
   const { isConnected } = useAccount()
@@ -67,16 +68,16 @@ export default function CreateEventPage() {
       const data = await res.json();
       const metadataURI = `ipfs://${data.ipfsHash}`;
 
-      // 2. Panggil Smart Contract (HANYA 6 ARGUMEN agar tidak error)
       // Royalti dihapus dari pemanggilan karena Kontrak tidak memintanya
-      await createEvent(
-        form.name,
-        form.date,
-        `${form.venue}, ${form.city}`,
-        form.price,
-        BigInt(form.maxSupply),
-        metadataURI,           // <--- Ini Data ke-6 (Terakhir)
-      );
+     await createEvent(
+  form.name,                           // 1. Nama (Teks)
+  form.date,                           // 2. Tanggal (Teks)
+  `${form.venue}, ${form.city}`,       // 3. Lokasi (Teks)
+  parseEther(form.price),              // 4. Harga (Wajib diconvert ke Wei/BigInt)
+  BigInt(form.maxSupply),              // 5. Supply (Wajib BigInt)
+  BigInt(form.royalty),                // 6. Royalty (Wajib BigInt)
+  metadataURI                          // 7. Link Gambar Pinata (Teks)
+);
 
     } catch (err) {
       console.error("Upload/Deploy failed:", err);
