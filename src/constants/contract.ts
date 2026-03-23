@@ -2,7 +2,7 @@ import TicketNFTJson from './TicketNFT.json'
 
 export const CONTRACT_ADDRESS = '0x6155dEe4e749752Cdf3CA83B88A37965F729027E'
 
-export const TICKET_NFT_ABI = [{
+export const CONTRACT_ABI = [{
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"

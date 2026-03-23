@@ -24,14 +24,15 @@ async function main() {
     'Electronic Horizon Festival',
     '28 Mar 2026',
     'JIEXPO Hall A, Jakarta',
-    ethers.parseEther('0.01'), // 0.01 ETH testnet
+    ethers.parseEther('0.01'),
     1000,
-    500 // 5% royalty
+    500,
+    "ipfs://QmContohCidDummy123" 
   )
   await tx.wait()
   console.log('✅ Sample event created!')
   console.log('\n📋 Save this contract address:', address)
-}
+};
 
 main().catch((error) => {
   console.error(error)
