@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
