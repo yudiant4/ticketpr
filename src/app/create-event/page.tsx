@@ -68,6 +68,7 @@ export default function CreateEventPage() {
       `${form.venue}, ${form.city}`,
       form.price,
       BigInt(form.maxSupply),
+      parseInt(form.royalty),
       metadataURI // <--- Masukkan link gambar di sini
     );
 
