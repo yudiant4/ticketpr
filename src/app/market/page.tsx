@@ -6,7 +6,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-import Navbar from '../components/Navbar' // Tanda kutip sudah saya perbaiki di sini
+import Navbar from '../components/Navbar' 
 import Footer from '../components/Footer'
 
 // --- HELPER: Ubah IPFS ke URL Browser ---
@@ -40,10 +40,9 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
         <div style={{ 
             background: 'white', border: '1px solid #E8E4F5', borderRadius: '20px', 
             overflow: 'hidden', display: 'flex', 
-            flexDirection: isMobile ? 'column' : 'row', // HP: Tumpuk ke bawah
+            flexDirection: isMobile ? 'column' : 'row', 
             transition: 'transform 0.2s'
         }}>
-            {/* Poster Event */}
             <div style={{ 
                 width: isMobile ? '100%' : '180px', 
                 height: isMobile ? '220px' : 'auto',
@@ -61,7 +60,6 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
                 )}
             </div>
 
-            {/* Detail Event */}
             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -93,7 +91,6 @@ export default function MarketPage() {
     const [isMobile, setIsMobile] = useState(false)
     const [buyModal, setBuyModal] = useState<any | null>(null)
 
-    // Deteksi Ukuran Layar HP
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
         handleResize()
@@ -110,40 +107,42 @@ export default function MarketPage() {
     const { writeContract, isPending: isBuying } = useWriteContract()
 
     return (
-        <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        // 1. TAMBAHKAN FLEX COLUMN DI SINI
+        <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
 
-            {/* HEADER */}
-            <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 16px' : '60px 48px', color: 'white' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <h1 style={{ fontSize: isMobile ? '32px' : '40px', fontWeight: 800, margin: 0 }}>🛒 Event Market</h1>
-                    <p style={{ opacity: 0.8, fontSize: '16px', marginTop: '8px' }}>Mint official NFT tickets for upcoming events</p>
+            {/* 2. BUNGKUS KONTEN TENGAH DENGAN FLEX 1 */}
+            <div style={{ flex: 1 }}>
+                <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 16px' : '60px 48px', color: 'white' }}>
+                    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                        <h1 style={{ fontSize: isMobile ? '32px' : '40px', fontWeight: 800, margin: 0 }}>🛒 Event Market</h1>
+                        <p style={{ opacity: 0.8, fontSize: '16px', marginTop: '8px' }}>Mint official NFT tickets for upcoming events</p>
+                    </div>
+                </div>
+
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '24px 16px' : '40px 48px' }}>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
+                        gap: isMobile ? '16px' : '24px' 
+                    }}>
+                        {eventCount && Number(eventCount) > 0 ? (
+                            Array.from({ length: Number(eventCount) }).map((_, i) => (
+                                <EventItem 
+                                    key={i} 
+                                    id={BigInt(i + 1)} 
+                                    isMobile={isMobile} 
+                                    onBuy={(ev) => setBuyModal(ev)} 
+                                />
+                            ))
+                        ) : (
+                            <p style={{ color: '#9896B0', textAlign: 'center', gridColumn: '1/-1' }}>No events found on blockchain.</p>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* GRID EVENT: 2 Kolom di Laptop, 1 Kolom di HP */}
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '24px 16px' : '40px 48px' }}>
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', // INI KUNCINYA
-                    gap: isMobile ? '16px' : '24px' 
-                }}>
-                    {eventCount && Number(eventCount) > 0 ? (
-                        Array.from({ length: Number(eventCount) }).map((_, i) => (
-                            <EventItem 
-                                key={i} 
-                                id={BigInt(i + 1)} 
-                                isMobile={isMobile} 
-                                onBuy={(ev) => setBuyModal(ev)} 
-                            />
-                        ))
-                    ) : (
-                        <p style={{ color: '#9896B0', textAlign: 'center', gridColumn: '1/-1' }}>No events found on blockchain.</p>
-                    )}
-                </div>
-            </div>
-
-            {/* MODAL BELI (Versi HP ramah jempol) */}
+            {/* MODAL BELI */}
             {buyModal && (
                 <div onClick={() => setBuyModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,10,30,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center' }}>
                     <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: isMobile ? '24px 24px 0 0' : '24px', padding: '32px', width: isMobile ? '100%' : '400px' }}>
@@ -166,6 +165,9 @@ export default function MarketPage() {
                     </div>
                 </div>
             )}
+
+            {/* 3. INI FOOTERNYA! DI TEMPATKAN SEBELUM TUTUP MAIN */}
+            <Footer />
         </main>
     )
 }
