@@ -23,7 +23,7 @@ export function useEventCount() {
 }
 
 export function useEvent(eventId: bigint) {
-  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getEvent', args: [eventId], chainId: sepolia.id, query: { enabled: eventId > BigInt(0) } })
+  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getEventDetails', args: [eventId], chainId: sepolia.id, query: { enabled: eventId > BigInt(0) } })
 }
 
 export function useMyTickets() {
