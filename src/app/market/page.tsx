@@ -6,10 +6,10 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-// Sesuai foto explorer kamu: folder components ada di dalam app
+// INI ALAMAT YANG PALING BENAR UNTUK STRUKTUR SRC/APP/MARKET KE SRC/APP/COMPONENTS
 import Navbar from '../components/Navbar' 
 
-// --- HELPER IPFS ---
+// --- HELPER UNTUK GAMBAR IPFS ---
 const getIPFSUrl = (ipfsUri: string) => {
     if (!ipfsUri) return "";
     if (ipfsUri.startsWith("ipfs://")) {
@@ -18,7 +18,7 @@ const getIPFSUrl = (ipfsUri: string) => {
     return ipfsUri;
 };
 
-// --- KOMPONEN ITEM EVENT ---
+// --- KOMPONEN KOTAK EVENT ---
 function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) => void, isMobile: boolean }) {
     const { data: event, isLoading } = useReadContract({
         address: CONTRACT_ADDRESS,
@@ -60,7 +60,7 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>{name}</h3>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0F0A1E' }}>{name}</h3>
                         <span style={{ background: '#F3F0FF', color: '#7C3AED', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>#{id.toString()}</span>
                     </div>
                     <p style={{ fontSize: '13px', color: '#7C3AED', fontWeight: 600, margin: '4px 0' }}>📍 {location}</p>
@@ -83,8 +83,8 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
     )
 }
 
+// --- HALAMAN UTAMA ---
 export default function MarketPage() {
-    const { isConnected } = useAccount()
     const [buyModal, setBuyModal] = useState<any | null>(null)
     const [isMobile, setIsMobile] = useState(false)
 
@@ -126,12 +126,12 @@ export default function MarketPage() {
                 </div>
             </div>
 
+            {/* MODAL BELI */}
             {buyModal && (
                 <div onClick={() => setBuyModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,10,30,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center' }}>
                     <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: isMobile ? '24px 24px 0 0' : '24px', padding: '32px', width: isMobile ? '100%' : '400px' }}>
                         <h3 style={{ fontSize: '20px', fontWeight: 800, textAlign: 'center' }}>Confirm Purchase</h3>
-                        <p style={{ textAlign: 'center', color: '#9896B0', margin: '12px 0 24px' }}>Minting ticket for <b>{buyModal.name}</b></p>
-                        <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                             <button onClick={() => setBuyModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', fontWeight: 700 }}>Cancel</button>
                             <button 
                                 onClick={() => {
