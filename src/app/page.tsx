@@ -2,168 +2,227 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useAccount, useReadContract } from 'wagmi'
-import { formatEther } from 'viem'
+import { useAccount, useReadContract, useBalance } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-import Navbar from './components/Navbar' // Import Navbar terpusat kamu
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
-// --- DATA FEATURED (Untuk pemanis Landing Page) ---
-const featuredEvents = [
-  { id: 'f1', emoji: '🎵', name: 'Electronic Horizon', city: 'Jakarta', price: '0.05', bg: 'linear-gradient(135deg,#667EEA,#764BA2)' },
-  { id: 'f2', emoji: '🚀', name: 'Web3 Launchpad', city: 'Bali', price: '0.02', bg: 'linear-gradient(135deg,#F093FB,#F5576C)' },
-]
-
-export default function HomePage() {
+export default function DashboardLayout() {
+  const { address, isConnected } = useAccount()
   const [isMobile, setIsMobile] = useState(false)
-  const [activeFilter, setActiveFilter] = useState('all')
+  const [activeTab, setActiveTab] = useState('dashboard') // State untuk ganti-ganti menu
 
+  // Ambil Saldo & Tiket
+  const { data: balanceData } = useBalance({ address })
+  const { data: myTickets } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'getTicketsByOwner',
+    args: address ? [address] : undefined,
+  })
+
+  // Deteksi Layar HP
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    const handleResize = () => setIsMobile(window.innerWidth < 1024)
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // AMBIL TOTAL EVENT DARI BLOCKCHAIN
-  const { data: eventCount } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: CONTRACT_ABI,
-    functionName: 'eventCount',
-  })
+  if (!isConnected) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF' }}>
+        <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔐</div>
+        <h2 style={{ fontWeight: 800, color: '#0F0A1E', marginBottom: '20px' }}>Please connect your wallet</h2>
+        <ConnectButton />
+        <Link href="/" style={{ marginTop: '20px', color: '#7C3AED', fontWeight: 600, textDecoration: 'none' }}>← Back to Home</Link>
+      </div>
+    )
+  }
+
+  // --- KOMPONEN SIDEBAR ITEM ---
+  const SidebarItem = ({ icon, label, tabId, isLink = false, linkUrl = "/" }: any) => {
+    const isActive = activeTab === tabId;
+    
+    // Jika ini link biasa (pindah halaman)
+    if (isLink) {
+      return (
+        <Link href={linkUrl} style={{
+          display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+          borderRadius: '12px', textDecoration: 'none', color: '#4B4869',
+          fontWeight: 600, marginBottom: '4px', transition: 'all 0.2s'
+        }}>
+          <span style={{ fontSize: '18px' }}>{icon}</span>
+          <span style={{ fontSize: '14px' }}>{label}</span>
+        </Link>
+      )
+    }
+
+    // Jika ini Tab di dalam Dashboard
+    return (
+      <button 
+        onClick={() => setActiveTab(tabId)} 
+        style={{
+          display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+          borderRadius: '12px', textDecoration: 'none', width: '100%', border: 'none',
+          background: isActive ? '#F3F0FF' : 'transparent',
+          color: isActive ? '#7C3AED' : '#4B4869',
+          fontWeight: isActive ? 700 : 600, cursor: 'pointer',
+          marginBottom: '4px', transition: 'all 0.2s', fontFamily: 'inherit', textAlign: 'left'
+        }}
+      >
+        <span style={{ fontSize: '18px' }}>{icon}</span>
+        <span style={{ fontSize: '14px' }}>{label}</span>
+      </button>
+    )
+  }
+
+  // --- KONTEN: DASHBOARD UTAMA ---
+  const renderDashboardHome = () => (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+        <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #E8E4F5' }}>
+          <div style={{ fontSize: '20px', marginBottom: '16px' }}>🎫</div>
+          <div style={{ fontSize: '28px', fontWeight: 800 }}>{myTickets ? (myTickets as any).length : 0}</div>
+          <div style={{ fontSize: '13px', color: '#9896B0' }}>My Tickets</div>
+        </div>
+        <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #E8E4F5' }}>
+          <div style={{ fontSize: '20px', marginBottom: '16px' }}>💰</div>
+          <div style={{ fontSize: '24px', fontWeight: 800 }}>{balanceData ? Number(balanceData.formatted).toFixed(4) : '0.00'} ETH</div>
+          <div style={{ fontSize: '13px', color: '#9896B0' }}>Wallet Balance</div>
+        </div>
+        <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #E8E4F5' }}>
+          <div style={{ fontSize: '20px', marginBottom: '16px' }}>❤️</div>
+          <div style={{ fontSize: '28px', fontWeight: 800 }}>2</div>
+          <div style={{ fontSize: '13px', color: '#9896B0' }}>Saved Events</div>
+        </div>
+        <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #E8E4F5' }}>
+          <div style={{ fontSize: '20px', marginBottom: '16px' }}>⛓️</div>
+          <div style={{ fontSize: '24px', fontWeight: 800 }}>Sepolia</div>
+          <div style={{ fontSize: '13px', color: '#9896B0' }}>Network</div>
+        </div>
+      </div>
+    </>
+  )
+
+  // --- KONTEN: SAVED EVENTS ---
+  const renderSavedEvents = () => (
+    <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #E8E4F5', padding: '30px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '20px' }}>❤️ Saved Events</h2>
+      <p style={{ color: '#9896B0' }}>You have 2 events in your wishlist.</p>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+        {['Neon City Rave Vol. 3', 'Web3 Culture Festival'].map((name, i) => (
+          <div key={i} style={{ border: '1px solid #E8E4F5', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div><div style={{ fontWeight: 700 }}>{name}</div><div style={{ fontSize: '12px', color: '#7C3AED' }}>Ticket available</div></div>
+            <Link href="/market" style={{ padding: '8px 16px', background: '#F3F0FF', color: '#7C3AED', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: '12px' }}>View</Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // --- KONTEN: UPCOMING TICKETS ---
+  const renderUpcoming = () => (
+    <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #E8E4F5', padding: '30px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '20px' }}>🎟️ Upcoming Events</h2>
+      {myTickets && (myTickets as any).length > 0 ? (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {(myTickets as any).map((ticket: any, i: number) => (
+            <div key={i} style={{ background: '#FAFAFF', border: '1px solid #E8E4F5', borderRadius: '16px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F0A1E' }}>{ticket.eventName || `Ticket #${ticket.tokenId}`}</div>
+                <div style={{ fontSize: '13px', color: '#9896B0', marginTop: '4px' }}>Valid for entry</div>
+              </div>
+              <button style={{ padding: '10px 20px', background: '#0F0A1E', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}>Show QR</button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={{ color: '#9896B0' }}>You don't have any upcoming events. Go mint some tickets!</p>
+      )}
+    </div>
+  )
+
+  // --- KONTEN: PROFILE & SETTINGS ---
+  const renderProfile = () => (
+    <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #E8E4F5', padding: '30px', maxWidth: '600px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>👤 Profile</h2>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '8px' }}>Wallet Address</label>
+        <input disabled value={address} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: '#FAFAFF', color: '#9896B0' }} />
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, marginBottom: '8px' }}>Username</label>
+        <input placeholder="Enter username..." style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5' }} />
+      </div>
+      <button style={{ padding: '14px 24px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Save Changes</button>
+    </div>
+  )
+
+  const renderSettings = () => (
+    <div style={{ background: 'white', borderRadius: '24px', border: '1px solid #E8E4F5', padding: '30px', maxWidth: '600px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>⚙️ Settings</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid #E8E4F5' }}>
+        <div><div style={{ fontWeight: 700 }}>Email Notifications</div><div style={{ fontSize: '12px', color: '#9896B0' }}>Get updates on new events</div></div>
+        <input type="checkbox" defaultChecked style={{ width: '20px', height: '20px' }} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0' }}>
+        <div><div style={{ fontWeight: 700 }}>Dark Mode</div><div style={{ fontSize: '12px', color: '#9896B0' }}>Toggle application theme</div></div>
+        <input type="checkbox" style={{ width: '20px', height: '20px' }} />
+      </div>
+    </div>
+  )
 
   return (
-    <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FAFAFF', minHeight: '100vh', color: '#0F0A1E' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       
-      {/* 1. NAVBAR TERPUSAT */}
-      <Navbar />
-
-      {/* 2. HERO SECTION (Halaman Utama) */}
-      <div style={{ 
-        background: 'linear-gradient(135deg,#7C3AED,#A855F7,#EC4899)', 
-        padding: isMobile ? '60px 20px' : '100px 48px', 
-        position: 'relative', 
-        overflow: 'hidden',
-        textAlign: isMobile ? 'center' : 'left'
-      }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.12) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: isMobile ? '36px' : '56px', fontWeight: 800, color: 'white', lineHeight: 1.1 }}>
-            The Future of <br/> <span style={{ color: '#FEE140' }}>NFT Ticketing</span>
-          </h1>
-          <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.9)', marginTop: '20px', maxWidth: '600px' }}>
-            Secure, verifiable, and collectible. Join thousands of creators selling official event tickets on the blockchain.
-          </p>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '32px', justifyContent: isMobile ? 'center' : 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
-            <Link href="/market" style={{ background: 'white', color: '#7C3AED', padding: '16px 32px', borderRadius: '50px', fontWeight: 800, textDecoration: 'none' }}>🔥 Explore Market</Link>
-            <Link href="/create-event" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid white', padding: '16px 32px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none' }}>➕ Create Event</Link>
+      {/* ================= SIDEBAR (Sesuai Foto Kamu) ================= */}
+      {!isMobile && (
+        <aside style={{ width: '260px', background: 'white', borderRight: '1px solid #E8E4F5', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', top: 0, left: 0 }}>
+          <div style={{ padding: '24px', borderBottom: '1px solid #E8E4F5', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>🎟️</div>
+            <div style={{ fontWeight: 800, fontSize: '20px', color: '#0F0A1E' }}>Ticket<span style={{ color: '#7C3AED' }}>Pro</span></div>
           </div>
-        </div>
-      </div>
 
-      {/* 3. MAIN LAYOUT: BROWSE SECTION */}
-      <div style={{ 
-        maxWidth: '1200px', 
-        margin: '0 auto', 
-        padding: isMobile ? '40px 16px' : '60px 48px',
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '260px 1fr',
-        gap: '40px'
-      }}>
+          <div style={{ padding: '20px 16px', flex: 1, overflowY: 'auto' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#9896B0', marginBottom: '12px', paddingLeft: '16px', letterSpacing: '0.05em' }}>MENU</div>
+            <SidebarItem icon="🏠" label="Dashboard" tabId="dashboard" />
+            <SidebarItem icon="🔍" label="Explore Events" isLink={true} linkUrl="/" />
+            <SidebarItem icon="❤️" label="Saved Events" tabId="saved" />
 
-        {/* SIDEBAR FILTER (Responsive) */}
-        <aside style={{ 
-            display: 'flex', 
-            flexDirection: isMobile ? 'row' : 'column', 
-            gap: '12px',
-            overflowX: isMobile ? 'auto' : 'visible',
-            paddingBottom: isMobile ? '20px' : '0',
-            position: isMobile ? 'static' : 'sticky',
-            top: '100px',
-            whiteSpace: 'nowrap'
-        }}>
-            <h3 style={{ display: isMobile ? 'none' : 'block', fontSize: '18px', fontWeight: 800, marginBottom: '10px' }}>Filter by</h3>
-            {['all', 'Music', 'Tech', 'Art', 'Sports'].map((cat) => (
-                <button 
-                    key={cat}
-                    onClick={() => setActiveFilter(cat)}
-                    style={{
-                        padding: '10px 20px',
-                        borderRadius: '50px',
-                        border: '1px solid #E8E4F5',
-                        background: activeFilter === cat ? '#7C3AED' : 'white',
-                        color: activeFilter === cat ? 'white' : '#4B4869',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '13px'
-                    }}
-                >
-                    {cat.toUpperCase()}
-                </button>
-            ))}
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#9896B0', margin: '24px 0 12px', paddingLeft: '16px', letterSpacing: '0.05em' }}>MY TICKETS</div>
+            <SidebarItem icon="🎫" label="Upcoming Events" tabId="upcoming" />
+            <SidebarItem icon="🕰️" label="Past Events" tabId="past" />
+
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#9896B0', margin: '24px 0 12px', paddingLeft: '16px', letterSpacing: '0.05em' }}>ACCOUNT</div>
+            <SidebarItem icon="👤" label="Profile" tabId="profile" />
+            <SidebarItem icon="⚙️" label="Settings" tabId="settings" />
+          </div>
         </aside>
+      )}
 
-        {/* CONTENT AREA: EVENT GRID */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-             <h2 style={{ fontSize: '24px', fontWeight: 800 }}>Live on Blockchain</h2>
-             <span style={{ fontSize: '14px', color: '#9896B0' }}>{eventCount?.toString() || '0'} Events</span>
-          </div>
-
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
-            gap: '24px' 
-          }}>
-            {/* 4. LOOP DATA ASLI (Sama seperti Market) */}
-            {eventCount && Number(eventCount) > 0 ? (
-                Array.from({ length: Number(eventCount) }).map((_, i) => (
-                    <div key={i} style={{ background: 'white', borderRadius: '24px', border: '1px solid #E8E4F5', overflow: 'hidden' }}>
-                         <div style={{ height: '140px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>🎫</div>
-                         <div style={{ padding: '20px' }}>
-                             <div style={{ fontWeight: 800, fontSize: '18px' }}>Event #{i + 1}</div>
-                             <p style={{ color: '#9896B0', fontSize: '13px' }}>Official NFT Ticket</p>
-                             <Link href="/market" style={{ display: 'block', marginTop: '15px', textAlign: 'center', background: '#F3F0FF', color: '#7C3AED', padding: '10px', borderRadius: '12px', fontWeight: 700, textDecoration: 'none', fontSize: '14px' }}>View Details</Link>
-                         </div>
-                    </div>
-                ))
-            ) : (
-                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', background: 'white', borderRadius: '24px', border: '1px dashed #E8E4F5' }}>
-                    <p style={{ color: '#9896B0' }}>No live events yet. Be the first creator!</p>
-                </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 5. FOOTER (Responsive) */}
-      <footer style={{ background: '#0F0A1E', color: 'white', padding: isMobile ? '40px 20px' : '80px 48px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: '40px' }}>
+      {/* ================= KONTEN UTAMA ================= */}
+      <main style={{ flex: 1, marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '20px' : '40px' }}>
+        
+        {/* Header Bar */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexDirection: isMobile ? 'column' : 'row', gap: '20px' }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '24px', marginBottom: '16px' }}>Ticket<span style={{ color: '#7C3AED' }}>Pro</span></div>
-            <p style={{ color: 'rgba(255,255,255,0.4)', maxWidth: '300px' }}>The world's first decentralized ticketing platform for the next generation of events.</p>
+            <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0F0A1E', textTransform: 'capitalize' }}>
+              {activeTab === 'dashboard' ? 'Overview' : activeTab.replace('-', ' ')}
+            </h1>
+            <p style={{ color: '#9896B0', fontSize: '14px', marginTop: '4px' }}>{address?.slice(0, 6)}...{address?.slice(-4)}</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
-             <div>
-                <h4 style={{ marginBottom: '16px' }}>Platform</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', opacity: 0.6 }}>
-                    <Link href="/market" style={{ color: 'white', textDecoration: 'none' }}>Marketplace</Link>
-                    <Link href="/create-event" style={{ color: 'white', textDecoration: 'none' }}>Create Event</Link>
-                </div>
-             </div>
-             <div>
-                <h4 style={{ marginBottom: '16px' }}>Verify</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px', opacity: 0.6 }}>
-                    <Link href="/verify" style={{ color: 'white', textDecoration: 'none' }}>Check Ticket</Link>
-                    <Link href="/dashboard" style={{ color: 'white', textDecoration: 'none' }}>Dashboard</Link>
-                </div>
-             </div>
-          </div>
-        </div>
-        <div style={{ maxWidth: '1200px', margin: '40px auto 0', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
-            © 2026 TicketPro Ecosystem. Built on Ethereum Sepolia.
-        </div>
-      </footer>
+          <ConnectButton />
+        </header>
 
-    </main>
+        {/* LOGIC RENDER TAB: Ganti konten berdasarkan menu yang diklik */}
+        {activeTab === 'dashboard' && renderDashboardHome()}
+        {activeTab === 'saved' && renderSavedEvents()}
+        {activeTab === 'upcoming' && renderUpcoming()}
+        {activeTab === 'past' && <div style={{ color: '#9896B0', padding: '40px', background: 'white', borderRadius: '24px', textAlign: 'center' }}>No past events found.</div>}
+        {activeTab === 'profile' && renderProfile()}
+        {activeTab === 'settings' && renderSettings()}
+
+      </main>
+    </div>
   )
 }
