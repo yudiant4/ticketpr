@@ -9,18 +9,18 @@ import { useEvent, useEventCount } from '@/hooks/useTicketPro'
 import { formatEther } from 'viem'
 
 const eventData: Record<string, any> = {
-  '1': { emoji: '🎵', name: 'Electronic Horizon Festival', org: 'HorizonDAO', date: '28 Mar 2026', time: '18:00 WIB', venue: 'JIEXPO Hall A', city: 'Jakarta', chain: 'Ethereum', supply: 1000, sold: 850, price: 0.01, bg: 'linear-gradient(135deg,#667EEA,#764BA2)', tags: ['Music','EDM','Festival'] },
-  '2': { emoji: '🎤', name: 'Neon City Rave Vol. 3', org: 'NeonCollective', date: '5 Apr 2026', time: '20:00 WIB', venue: 'Potato Head', city: 'Bali', chain: 'Polygon', supply: 800, sold: 620, price: 0.008, bg: 'linear-gradient(135deg,#F093FB,#F5576C)', tags: ['Rave','Techno'] },
-  '3': { emoji: '💻', name: 'Block Summit 2026', org: 'BlockDAO', date: '12 Apr 2026', time: '09:00 WIB', venue: 'Grand City Hall', city: 'Surabaya', chain: 'Base', supply: 2000, sold: 310, price: 0.005, bg: 'linear-gradient(135deg,#4FACFE,#00F2FE)', tags: ['Web3','Conference'] },
-  '4': { emoji: '🎨', name: 'Metamorphosis Art Fair', org: 'ArtOnChain', date: '19 Apr 2026', time: '10:00 WIB', venue: 'Gedung Sate', city: 'Bandung', chain: 'Ethereum', supply: 600, sold: 450, price: 0.007, bg: 'linear-gradient(135deg,#43E97B,#38F9D7)', tags: ['Art','Exhibition'] },
-  '5': { emoji: '🎭', name: 'Web3 Culture Festival', org: 'CultureDAO', date: '25 Apr 2026', time: '14:00 WIB', venue: 'Prambanan Area', city: 'Yogyakarta', chain: 'Polygon', supply: 1500, sold: 980, price: 0.006, bg: 'linear-gradient(135deg,#FA709A,#FEE140)', tags: ['Culture','Web3'] },
-  '6': { emoji: '🚀', name: 'DeFi Launchpad Night', org: 'DeFiGuild', date: '2 Mei 2026', time: '19:00 WIB', venue: 'The Westin Jakarta', city: 'Jakarta', chain: 'Base', supply: 500, sold: 200, price: 0.005, bg: 'linear-gradient(135deg,#A18CD1,#FBC2EB)', tags: ['DeFi','Networking'] },
+  '1': { emoji: '🎵', name: 'Electronic Horizon Festival', org: 'HorizonDAO', date: '28 Mar 2026', time: '18:00 WIB', venue: 'JIEXPO Hall A', city: 'Jakarta', chain: 'Ethereum', supply: 1000, sold: 850, price: 0.01, bg: 'linear-gradient(135deg,#667EEA,#764BA2)', tags: ['Music', 'EDM', 'Festival'] },
+  '2': { emoji: '🎤', name: 'Neon City Rave Vol. 3', org: 'NeonCollective', date: '5 Apr 2026', time: '20:00 WIB', venue: 'Potato Head', city: 'Bali', chain: 'Polygon', supply: 800, sold: 620, price: 0.008, bg: 'linear-gradient(135deg,#F093FB,#F5576C)', tags: ['Rave', 'Techno'] },
+  '3': { emoji: '💻', name: 'Block Summit 2026', org: 'BlockDAO', date: '12 Apr 2026', time: '09:00 WIB', venue: 'Grand City Hall', city: 'Surabaya', chain: 'Base', supply: 2000, sold: 310, price: 0.005, bg: 'linear-gradient(135deg,#4FACFE,#00F2FE)', tags: ['Web3', 'Conference'] },
+  '4': { emoji: '🎨', name: 'Metamorphosis Art Fair', org: 'ArtOnChain', date: '19 Apr 2026', time: '10:00 WIB', venue: 'Gedung Sate', city: 'Bandung', chain: 'Ethereum', supply: 600, sold: 450, price: 0.007, bg: 'linear-gradient(135deg,#43E97B,#38F9D7)', tags: ['Art', 'Exhibition'] },
+  '5': { emoji: '🎭', name: 'Web3 Culture Festival', org: 'CultureDAO', date: '25 Apr 2026', time: '14:00 WIB', venue: 'Prambanan Area', city: 'Yogyakarta', chain: 'Polygon', supply: 1500, sold: 980, price: 0.006, bg: 'linear-gradient(135deg,#FA709A,#FEE140)', tags: ['Culture', 'Web3'] },
+  '6': { emoji: '🚀', name: 'DeFi Launchpad Night', org: 'DeFiGuild', date: '2 Mei 2026', time: '19:00 WIB', venue: 'The Westin Jakarta', city: 'Jakarta', chain: 'Base', supply: 500, sold: 200, price: 0.005, bg: 'linear-gradient(135deg,#A18CD1,#FBC2EB)', tags: ['DeFi', 'Networking'] },
 }
 
 const tiers = [
-  { name: 'General Admission', icon: '🎫', price: 1, perks: ['Main Stage','Side Stage','F&B Access'], sold: 700, total: 800 },
-  { name: 'VIP Pass', icon: '⭐', price: 2, perks: ['VIP Lounge','Priority Entry','Free Drinks'], sold: 148, total: 180 },
-  { name: 'Legendary Pass', icon: '👑', price: 5.5, perks: ['Backstage','Exclusive NFT','Artist Dinner'], sold: 20, total: 20 },
+  { name: 'General Admission', icon: '🎫', price: 1, perks: ['Main Stage', 'Side Stage', 'F&B Access'], sold: 700, total: 800 },
+  { name: 'VIP Pass', icon: '⭐', price: 2, perks: ['VIP Lounge', 'Priority Entry', 'Free Drinks'], sold: 148, total: 180 },
+  { name: 'Legendary Pass', icon: '👑', price: 5.5, perks: ['Backstage', 'Exclusive NFT', 'Artist Dinner'], sold: 20, total: 20 },
 ]
 
 export default function TicketDetail({ params }: { params: { id: string } }) {
@@ -33,10 +33,10 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
   const [showModal, setShowModal] = useState(false)
   const [mintError, setMintError] = useState('')
 
-const { data: contractEvent } = useEvent(BigInt(params.id))
-const contractPrice = contractEvent
-  ? parseFloat(formatEther((contractEvent as any).price))
-  : ev.price
+  const { data: contractEvent } = useEvent(BigInt(params.id))
+  const contractPrice = contractEvent
+    ? parseFloat(formatEther((contractEvent as any).price))
+    : ev.price
   const { mint, hash, isPending, isConfirming, isSuccess, error } = useMintTicket()
 
   const tierPrice = contractPrice * tiers[selectedTier].price
@@ -87,7 +87,7 @@ const contractPrice = contractEvent
         ev.city,                      // Kota
         tierPrice.toFixed(4)          // Harga dalam ETH (String)
       );
-    } catch (err: any) {              
+    } catch (err: any) {
       const msg = err?.message || '';
       console.error("Mint Error Details:", err);
 
@@ -103,7 +103,6 @@ const contractPrice = contractEvent
     }
   };
 
-
   return (
     <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FAFAFF', color: '#0F0A1E' }}>
 
@@ -115,8 +114,8 @@ const contractPrice = contractEvent
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
           <Link href="/create-event" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Create Event</Link>
-<Link href="/market" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
-<Link href="/verify" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Verify</Link>
+          <Link href="/market" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
+          <Link href="/verify" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Verify</Link>
         </div>
         <ConnectButton />
       </nav>
@@ -154,7 +153,7 @@ const contractPrice = contractEvent
                 </div>
                 <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                   <div style={{ fontSize: '11px', color: '#9896B0' }}>Token ID</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#7C3AED' }}>#TKP-{params.id.padStart(4,'0')}</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#7C3AED' }}>#TKP-{params.id.padStart(4, '0')}</div>
                 </div>
               </div>
             </div>
@@ -195,7 +194,7 @@ const contractPrice = contractEvent
           {/* TABS */}
           <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '20px', overflow: 'hidden' }}>
             <div style={{ display: 'flex', borderBottom: '1px solid #E8E4F5', padding: '0 24px' }}>
-              {['about','tiers','properties','history'].map((tab) => (
+              {['about', 'tiers', 'properties', 'history'].map((tab) => (
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   style={{ padding: '16px 20px', fontSize: '14px', fontWeight: 600, color: activeTab === tab ? '#7C3AED' : '#9896B0', background: 'none', border: 'none', borderBottom: `2px solid ${activeTab === tab ? '#7C3AED' : 'transparent'}`, cursor: 'pointer', marginBottom: '-1px', fontFamily: 'inherit', textTransform: 'capitalize' }}>
                   {tab === 'about' ? 'About Event' : tab === 'tiers' ? 'Ticket Tiers' : tab === 'properties' ? 'NFT Properties' : 'History'}
@@ -250,7 +249,7 @@ const contractPrice = contractEvent
                           <div style={{ fontSize: '11px', color: '#9896B0' }}>{tier.sold}/{tier.total} sold</div>
                           <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F0A1E' }}>{(ev.price * tier.price).toFixed(4)} ETH</div>
                           <div style={{ width: '100px', height: '4px', background: '#E5E7EB', borderRadius: '99px', marginTop: '6px', marginLeft: 'auto' }}>
-                            <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg,#7C3AED,#A855F7)', width: `${Math.round(tier.sold/tier.total*100)}%` }} />
+                            <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg,#7C3AED,#A855F7)', width: `${Math.round(tier.sold / tier.total * 100)}%` }} />
                           </div>
                         </div>
                       </div>
@@ -375,7 +374,7 @@ const contractPrice = contractEvent
               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: isConnected ? '#4ADE80' : '#9896B0', flexShrink: 0 }} />
               <div>
                 <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#7C3AED' }}>
-                  {isConnected && address ? `${address.slice(0,6)}...${address.slice(-4)}` : 'Not connected'}
+                  {isConnected && address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not connected'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '2px' }}>
                   {isConnected ? 'Sepolia Testnet' : 'Connect wallet to mint'}
@@ -399,8 +398,8 @@ const contractPrice = contractEvent
                 background: !isConnected
                   ? '#E8E4F5'
                   : isPending || isConfirming
-                  ? '#A855F7'
-                  : 'linear-gradient(135deg,#7C3AED,#A855F7)',
+                    ? '#A855F7'
+                    : 'linear-gradient(135deg,#7C3AED,#A855F7)',
                 color: !isConnected ? '#9896B0' : 'white',
                 border: 'none', borderRadius: '14px',
                 fontSize: '16px', fontWeight: 800,
@@ -413,10 +412,10 @@ const contractPrice = contractEvent
               {!isConnected
                 ? '🔗 Connect Wallet First'
                 : isPending
-                ? '⏳ Waiting for MetaMask...'
-                : isConfirming
-                ? '⛓️ Confirming on blockchain...'
-                : `🎟️ Mint for ${tierPrice.toFixed(4)} ETH`}
+                  ? '⏳ Waiting for MetaMask...'
+                  : isConfirming
+                    ? '⛓️ Confirming on blockchain...'
+                    : `🎟️ Mint for ${tierPrice.toFixed(4)} ETH`}
             </button>
 
             <button onClick={() => setWished(!wished)}
@@ -489,7 +488,7 @@ const contractPrice = contractEvent
             </div>
           </div>
         </div>
-      )
+      )}
     </main>
-  )
+  );
 }
