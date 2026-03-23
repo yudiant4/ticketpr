@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useCreateEvent } from '@/hooks/useTicketPro'
 import Navbar from '../components/Navbar' // Pakai Navbar terpusat
+import Footer from '../components/Footer'
+
 
 export default function CreateEventPage() {
   const { isConnected } = useAccount()
