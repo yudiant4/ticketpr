@@ -6,7 +6,7 @@ import { useAccount, useReadContract } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import Navbar from './components/Navbar'
 import { motion } from 'framer-motion' // Import Animasi
-import Footer from '../components/Footer'
+import Footer from './components/Footer'
 
 export default function LandingPage() {
   const [isMobile, setIsMobile] = useState(false)
