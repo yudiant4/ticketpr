@@ -78,6 +78,7 @@ async function main() {
       ev.venue,
       ethers.parseEther(ev.price),
       BigInt(ev.maxSupply),
+      500,
       ev.metadataURI
     )
     await tx.wait()
