@@ -513,7 +513,7 @@ const contractPrice = contractEvent
             </div>
           </div>
         </div>
-      )}
+      )
     </main>
   )
 }
