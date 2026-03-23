@@ -87,7 +87,7 @@ const contractPrice = contractEvent
         ev.city,                      // Kota
         tierPrice.toFixed(4)          // Harga dalam ETH (String)
       );
-     catch (err: any) {
+    } catch (err: any) {              
       const msg = err?.message || '';
       console.error("Mint Error Details:", err);
 
@@ -101,9 +101,9 @@ const contractPrice = contractEvent
         setMintError('❌ ' + (msg.slice(0, 100) || 'Mint failed.'));
       }
     }
-  }; // Penutup handleMint (Hanya satu!)
+  };
 
-  // 2. Langsung lanjut ke return
+
   return (
     <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FAFAFF', color: '#0F0A1E' }}>
 
