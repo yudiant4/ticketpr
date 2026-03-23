@@ -7,7 +7,7 @@ import { formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import Navbar from '../components/Navbar' // Tanda kutip sudah saya perbaiki di sini
-import Footer from './components/Footer'
+import Footer from '../components/Footer'
 
 // --- HELPER: Ubah IPFS ke URL Browser ---
 const getIPFSUrl = (ipfsUri: string) => {
