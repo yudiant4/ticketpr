@@ -68,15 +68,16 @@ export default function CreateEventPage() {
       const data = await res.json();
       const metadataURI = `ipfs://${data.ipfsHash}`;
 
-      // Royalti dihapus dari pemanggilan karena Kontrak tidak memintanya
-     await createEvent(
-  form.name,                           // 1. Nama (Teks)
-  form.date,                           // 2. Tanggal (Teks)
-  `${form.venue}, ${form.city}`,       // 3. Lokasi (Teks)
-  BigInt(form.maxSupply),              // 5. Supply (Wajib BigInt)
-  BigInt(form.royalty),                // 6. Royalty (Wajib BigInt)
-  metadataURI                          // 7. Link Gambar Pinata (Teks)
-);
+   
+  await createEvent(
+        form.name,                           // 1. Nama (Teks)
+        form.date,                           // 2. Tanggal (Teks)
+        `${form.venue}, ${form.city}`,       // 3. Lokasi (Teks)
+        form.price,                          // 4. Harga (Teks) 
+        BigInt(form.maxSupply),              // 5. Supply (BigInt)
+        BigInt(form.royalty),                // 6. Royalty (BigInt)
+        metadataURI                          // 7. Link Gambar (Teks)
+      );
 
     } catch (err) {
       console.error("Upload/Deploy failed:", err);
