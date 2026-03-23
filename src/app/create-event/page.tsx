@@ -28,20 +28,25 @@ export default function CreateEventPage() {
 
   const categories = ['🎵 Music', '🎨 Art', '💻 Tech', '🏟️ Sports', '🎭 Theater', '🚀 Web3', '🕹️ Gaming']
 
-  const validate = () => {
+  const validate = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
-    if (!form.name) newErrors.name = 'Event name is required'
-    if (!form.date) newErrors.date = 'Date is required'
-    if (!form.venue) newErrors.venue = 'Venue is required'
-    if (!form.city) newErrors.city = 'City is required'
-    if (!form.price || parseFloat(form.price) <= 0) newErrors.price = 'Valid price required'
-    if (!form.maxSupply || parseInt(form.maxSupply) <= 0) newErrors.maxSupply = 'Valid supply required'
+
+    if (currentStep === 1) {
+      if (!form.name) newErrors.name = 'Event name is required'
+      if (!form.date) newErrors.date = 'Date is required'
+      if (!form.venue) newErrors.venue = 'Venue is required'
+      if (!form.city) newErrors.city = 'City is required'
+    } else if (currentStep === 2) {
+      if (!form.price || parseFloat(form.price) <= 0) newErrors.price = 'Valid price required'
+      if (!form.maxSupply || parseInt(form.maxSupply) <= 0) newErrors.maxSupply = 'Valid supply required'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
  const handleSubmit = async () => {
-  if (!validate()) return;
+  if (!validate(2)) return; 
   if (!file) {
     alert("Please upload an event poster!");
     return;
@@ -240,7 +245,7 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              <button onClick={() => { if (validate()) setStep(2) }}
+              <button onClick={() => { if (validate(1)) setStep(2) }}
                 style={{ marginTop: '32px', width: '100%', padding: '16px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Next: Ticket Config →
               </button>
@@ -352,7 +357,7 @@ export default function CreateEventPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setStep(2)}
+                <button onClick={() => { if (validate(2)) setStep(3) }}
                   style={{ flex: 1, padding: '16px', background: 'white', color: '#0F0A1E', border: '1.5px solid #E8E4F5', borderRadius: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   ← Back
                 </button>
