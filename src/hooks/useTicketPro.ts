@@ -94,12 +94,39 @@ export function useUseTicket() {
   return { useTicketFn, hash, isPending, isSuccess, error }
 }
 
+
 export function useCreateEvent() {
   const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
-  const createEvent = async (name: string, date: string, venue: string, price: string, maxSupply: bigint, royaltyPercent: bigint) => {
-    return await writeContractAsync({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'createEvent', args: [name, date, venue, parseEther(price), maxSupply, royaltyPercent], chainId: sepolia.id })
+
+  
+  const createEvent = async (
+    name: string,
+    date: string,
+    venue: string,
+    price: string,
+    maxSupply: bigint,
+    royaltyPercent: bigint,
+    metadataURI: string 
+  ) => {
+    return await writeContractAsync({
+      address: CONTRACT_ADDRESS,
+      abi: CONTRACT_ABI,
+      functionName: 'createEvent',
+    
+      args: [
+        name,
+        date,
+        venue,
+        parseEther(price),
+        maxSupply,
+        royaltyPercent,
+        metadataURI 
+      ],
+      chainId: sepolia.id
+    })
   }
+
   return { createEvent, hash, isPending, isConfirming, isSuccess, error }
 }
 
