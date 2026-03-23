@@ -36,3 +36,26 @@ body {
   color: var(--text);
   overflow-x: hidden;
 }
+
+/* Efek Transisi Global */
+button, a, input {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animasi Background Berjalan di Hero */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-animated {
+  background-size: 200% 200%;
+  animation: gradientBG 10s ease infinite;
+}
+
+/* Efek Kartu Menyala */
+.card-glow:hover {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+  border-color: #7C3AED;
+}
