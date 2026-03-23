@@ -27,12 +27,12 @@ export default function DashboardPage() {
     }, [])
 
     // Ambil data tiket milik user (sesuai fungsi di kontrak kamu)
-    const { data: myTickets, isLoading } = useReadContract({
-        address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
-        functionName: 'getTicketsByOwner', // Sesuaikan dengan nama fungsi di kontrakmu
-        args: [address],
-    })
+  const { data: myTickets, isLoading } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'getTicketsByOwner',
+    args: address ? [address] : undefined, // <--- PAKAI INI
+  })
 
     if (!isConnected) {
         return (
