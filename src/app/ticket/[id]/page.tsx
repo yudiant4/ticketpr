@@ -87,7 +87,7 @@ const contractPrice = contractEvent
         ev.city,                      // Kota
         tierPrice.toFixed(4)          // Harga dalam ETH (String)
       );
-    } catch (err: any) {
+     catch (err: any) {
       const msg = err?.message || '';
       console.error("Mint Error Details:", err);
 
