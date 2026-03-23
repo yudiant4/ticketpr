@@ -68,6 +68,7 @@ const contractPrice = contractEvent
     }
   }, [error])
 
+  // 1. Fungsi handleMint yang sudah rapi
   const handleMint = async () => {
     if (!isConnected) {
       setMintError('Please connect your wallet first!');
@@ -100,8 +101,9 @@ const contractPrice = contractEvent
         setMintError('❌ ' + (msg.slice(0, 100) || 'Mint failed.'));
       }
     }
-  };
+  }; // Penutup handleMint (Hanya satu!)
 
+  // 2. Langsung lanjut ke return
   return (
     <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FAFAFF', color: '#0F0A1E' }}>
 
