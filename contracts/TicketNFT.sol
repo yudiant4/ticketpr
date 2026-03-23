@@ -21,6 +21,7 @@ contract TicketNFT is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard, ERC298
         bool active;
         address organizer;
         uint256 royaltyPercent;
+        string metadataURI;
     }
 
     struct Ticket {
@@ -43,33 +44,34 @@ contract TicketNFT is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard, ERC298
 
     constructor() ERC721("TicketPro NFT", "TKPRO") Ownable(msg.sender) {}
 
-    function createEvent(
-        string memory _name,
-        string memory _date,
-        string memory _venue,
-        uint256 _price,
-        uint256 _maxSupply,
-        uint256 _royaltyPercent
-    ) external returns (uint256) {
-        require(_royaltyPercent <= 1000, "Max royalty 10%");
-        
-        eventCount++;
-        events[eventCount] = Event({
-            name: _name,
-            date: _date,
-            venue: _venue,
-            price: _price,
-            maxSupply: _maxSupply,
-            minted: 0,
-            active: true,
-            organizer: msg.sender,
-            royaltyPercent: _royaltyPercent
-        });
+function createEvent(
+    string memory _name,
+    string memory _date,
+    string memory _venue,
+    uint256 _price,
+    uint256 _maxSupply,
+    uint256 _royaltyPercent,
+    string memory _metadataURI // <--- TAMBAHKAN PARAMETER KE-7
+) external returns (uint256) {
+    require(_royaltyPercent <= 1000, "Max royalty 10%");
+    
+    eventCount++;
+    events[eventCount] = Event({
+        name: _name,
+        date: _date,
+        venue: _venue,
+        price: _price,
+        maxSupply: _maxSupply,
+        minted: 0,
+        active: true,
+        organizer: msg.sender,
+        royaltyPercent: _royaltyPercent,
+        metadataURI: _metadataURI // <--- MASUKKAN KE DALAM STRUCT
+    });
 
-        emit EventCreated(eventCount, _name, msg.sender);
-        return eventCount;
-    }
-
+    emit EventCreated(eventCount, _name, msg.sender);
+    return eventCount;
+}
     function mintTicket(
         uint256 _eventId,
         string memory _tier,

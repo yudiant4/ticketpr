@@ -34,6 +34,7 @@ export declare namespace TicketNFT {
     active: boolean;
     organizer: AddressLike;
     royaltyPercent: BigNumberish;
+    metadataURI: string;
   };
 
   export type EventStructOutput = [
@@ -45,7 +46,8 @@ export declare namespace TicketNFT {
     minted: bigint,
     active: boolean,
     organizer: string,
-    royaltyPercent: bigint
+    royaltyPercent: bigint,
+    metadataURI: string
   ] & {
     name: string;
     date: string;
@@ -56,6 +58,7 @@ export declare namespace TicketNFT {
     active: boolean;
     organizer: string;
     royaltyPercent: bigint;
+    metadataURI: string;
   };
 
   export type TicketStruct = {
@@ -131,7 +134,15 @@ export interface TicketNFTInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createEvent",
-    values: [string, string, string, BigNumberish, BigNumberish, BigNumberish]
+    values: [
+      string,
+      string,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      string
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "eventCount",
@@ -521,7 +532,8 @@ export interface TicketNFT extends BaseContract {
       _venue: string,
       _price: BigNumberish,
       _maxSupply: BigNumberish,
-      _royaltyPercent: BigNumberish
+      _royaltyPercent: BigNumberish,
+      _metadataURI: string
     ],
     [bigint],
     "nonpayable"
@@ -541,7 +553,8 @@ export interface TicketNFT extends BaseContract {
         bigint,
         boolean,
         string,
-        bigint
+        bigint,
+        string
       ] & {
         name: string;
         date: string;
@@ -552,6 +565,7 @@ export interface TicketNFT extends BaseContract {
         active: boolean;
         organizer: string;
         royaltyPercent: bigint;
+        metadataURI: string;
       }
     ],
     "view"
@@ -710,7 +724,8 @@ export interface TicketNFT extends BaseContract {
       _venue: string,
       _price: BigNumberish,
       _maxSupply: BigNumberish,
-      _royaltyPercent: BigNumberish
+      _royaltyPercent: BigNumberish,
+      _metadataURI: string
     ],
     [bigint],
     "nonpayable"
@@ -732,7 +747,8 @@ export interface TicketNFT extends BaseContract {
         bigint,
         boolean,
         string,
-        bigint
+        bigint,
+        string
       ] & {
         name: string;
         date: string;
@@ -743,6 +759,7 @@ export interface TicketNFT extends BaseContract {
         active: boolean;
         organizer: string;
         royaltyPercent: bigint;
+        metadataURI: string;
       }
     ],
     "view"

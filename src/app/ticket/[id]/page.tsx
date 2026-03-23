@@ -69,15 +69,44 @@ const contractPrice = contractEvent
   }, [error])
 
   const handleMint = async () => {
-    if (!isConnected) {
-      setMintError('Please connect your wallet first!')
-      return
+  if (!isConnected) {
+    setMintError('Please connect your wallet first!');
+    return;
+  }
+
+  setMintError('');
+
+  try {
+  
+    await mint(
+      BigInt(params.id),            // eventId (Dinamis)
+      tiers[selectedTier].name,     // "Standard" / "VIP" / "VVIP"
+      ev.name,                      // Nama Event
+      ev.date,                      // Tanggal
+      ev.venue,                     // Lokasi
+      ev.city,                      // Kota
+      tierPrice.toFixed(4)          // Harga dalam ETH (String)
+    );
+  } catch (err: any) {
+    const msg = err?.message || '';
+    console.error("Mint Error Details:", err); // Log untuk debug
+
+    if (msg.includes('User rejected') || msg.includes('user rejected')) {
+      setMintError('❌ Transaction rejected in MetaMask.');
+    } else if (msg.includes('insufficient funds')) {
+      setMintError('❌ Insufficient ETH balance!');
+    } else if (msg.includes('execution reverted')) {
+      setMintError('❌ Contract error: Make sure this Event ID exists!');
+    } else {
+      setMintError('❌ ' + (msg.slice(0, 100) || 'Mint failed.'));
     }
+  }
+};
 
     setMintError('')
 
     try {
-      // ✅ FIX: pass semua 7 args yang dibutuhkan hook
+     
       await mint(
         BigInt(params.id),              // eventId
         tiers[selectedTier].name,       // tier

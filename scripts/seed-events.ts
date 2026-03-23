@@ -7,7 +7,7 @@ async function main() {
   const [deployer] = await ethers.getSigners()
   const contract = await ethers.getContractAt(
     'TicketNFT',
-    '0x83c8533bBEB920ccd51d3297BBC4d3b5219D0Cb7'
+    '0x2162F8bfCB75CB7EFdDA81E48dd12FeA3DC20dcA'
   )
 
   const events = [
@@ -78,7 +78,7 @@ async function main() {
       ev.venue,
       ethers.parseEther(ev.price),
       BigInt(ev.maxSupply),
-      BigInt(ev.royalty)
+      ev.metadataURI
     )
     await tx.wait()
     console.log(`✅ Event ${i + 1} created!`)

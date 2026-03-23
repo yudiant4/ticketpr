@@ -21,6 +21,8 @@ export default function CreateEventPage() {
     description: '',
     category: 'Music',
   })
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [step, setStep] = useState(1)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -38,21 +40,44 @@ export default function CreateEventPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async () => {
-    if (!validate()) return
-    try {
-      createEvent(
-        form.name,
-        form.date,
-        `${form.venue}, ${form.city}`,
-        form.price,
-        BigInt(form.maxSupply),
-        BigInt(form.royalty)
-      )
-    } catch (err) {
-      console.error(err)
-    }
+ const handleSubmit = async () => {
+  if (!validate()) return;
+  if (!file) {
+    alert("Please upload an event poster!");
+    return;
   }
+
+  setUploading(true);
+  try {
+    // 1. Upload ke Pinata
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/pinata", { // Pastikan kamu sudah punya API route ini
+      method: "POST",
+      body: formData,
+    });
+    
+    const { ipfsHash } = await res.json();
+    const metadataURI = `ipfs://${ipfsHash}`;
+
+    // 2. Panggil fungsi Smart Contract dengan metadataURI
+    createEvent(
+      form.name,
+      form.date,
+      `${form.venue}, ${form.city}`,
+      form.price,
+      BigInt(form.maxSupply),
+      metadataURI // <--- Masukkan link gambar di sini
+    );
+
+  } catch (err) {
+    console.error("Upload/Deploy failed:", err);
+    alert("Failed to create event. Check console.");
+  } finally {
+    setUploading(false);
+  }
+};
 
   const inputStyle = (field: string) => ({
     width: '100%', padding: '12px 16px',
@@ -195,6 +220,14 @@ export default function CreateEventPage() {
                     placeholder="e.g. JIEXPO Hall A, Kemayoran"
                     style={inputStyle('venue')} />
                   {errors.venue && <div style={{ fontSize: '12px', color: '#DC2626', marginTop: '4px' }}>{errors.venue}</div>}
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Event Poster *</label>
+                  <input type="file" accept="image/*"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    style={inputStyle('file')} />
+                  {file && <div style={{ fontSize: '12px', color: '#7C3AED', marginTop: '4px' }}>✅ {file.name} selected</div>}
                 </div>
 
                 <div>
