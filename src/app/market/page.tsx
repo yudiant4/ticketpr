@@ -6,10 +6,9 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-// INI ALAMAT YANG PALING BENAR UNTUK STRUKTUR SRC/APP/MARKET KE SRC/APP/COMPONENTS
-import Navbar from '../components/Navbar' 
+import Navbar from '../components/Navbar' // Tanda kutip sudah saya perbaiki di sini
 
-// --- HELPER UNTUK GAMBAR IPFS ---
+// --- HELPER: Ubah IPFS ke URL Browser ---
 const getIPFSUrl = (ipfsUri: string) => {
     if (!ipfsUri) return "";
     if (ipfsUri.startsWith("ipfs://")) {
@@ -39,10 +38,14 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
     return (
         <div style={{ 
             background: 'white', border: '1px solid #E8E4F5', borderRadius: '20px', 
-            overflow: 'hidden', display: 'flex', flexDirection: isMobile ? 'column' : 'row'
+            overflow: 'hidden', display: 'flex', 
+            flexDirection: isMobile ? 'column' : 'row', // HP: Tumpuk ke bawah
+            transition: 'transform 0.2s'
         }}>
+            {/* Poster Event */}
             <div style={{ 
-                width: isMobile ? '100%' : '180px', height: isMobile ? '200px' : 'auto',
+                width: isMobile ? '100%' : '180px', 
+                height: isMobile ? '220px' : 'auto',
                 background: '#F3F0FF', flexShrink: 0, position: 'relative'
             }}>
                 {imageUri ? (
@@ -57,10 +60,11 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
                 )}
             </div>
 
+            {/* Detail Event */}
             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0F0A1E' }}>{name}</h3>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>{name}</h3>
                         <span style={{ background: '#F3F0FF', color: '#7C3AED', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>#{id.toString()}</span>
                     </div>
                     <p style={{ fontSize: '13px', color: '#7C3AED', fontWeight: 600, margin: '4px 0' }}>📍 {location}</p>
@@ -83,11 +87,12 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
     )
 }
 
-// --- HALAMAN UTAMA ---
+// --- HALAMAN MARKET UTAMA ---
 export default function MarketPage() {
-    const [buyModal, setBuyModal] = useState<any | null>(null)
     const [isMobile, setIsMobile] = useState(false)
+    const [buyModal, setBuyModal] = useState<any | null>(null)
 
+    // Deteksi Ukuran Layar HP
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
         handleResize()
@@ -107,45 +112,54 @@ export default function MarketPage() {
         <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             <Navbar />
 
-            <div style={{ background: 'linear-gradient(135deg,#7C3AED,#A855F7,#EC4899)', padding: isMobile ? '40px 20px' : '60px 48px' }}>
+            {/* HEADER */}
+            <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 16px' : '60px 48px', color: 'white' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <h1 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, color: 'white', marginBottom: '8px' }}>🛒 Event Market</h1>
-                    <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)' }}>Get your official NFT tickets on the blockchain</p>
+                    <h1 style={{ fontSize: isMobile ? '32px' : '40px', fontWeight: 800, margin: 0 }}>🛒 Event Market</h1>
+                    <p style={{ opacity: 0.8, fontSize: '16px', marginTop: '8px' }}>Mint official NFT tickets for upcoming events</p>
                 </div>
             </div>
 
+            {/* GRID EVENT: 2 Kolom di Laptop, 1 Kolom di HP */}
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '24px 16px' : '40px 48px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap: isMobile ? '16px' : '24px' }}>
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', // INI KUNCINYA
+                    gap: isMobile ? '16px' : '24px' 
+                }}>
                     {eventCount && Number(eventCount) > 0 ? (
                         Array.from({ length: Number(eventCount) }).map((_, i) => (
-                            <EventItem key={i} id={BigInt(i + 1)} isMobile={isMobile} onBuy={(ev) => setBuyModal(ev)} />
+                            <EventItem 
+                                key={i} 
+                                id={BigInt(i + 1)} 
+                                isMobile={isMobile} 
+                                onBuy={(ev) => setBuyModal(ev)} 
+                            />
                         ))
                     ) : (
-                        <p style={{ color: '#9896B0' }}>No active events found.</p>
+                        <p style={{ color: '#9896B0', textAlign: 'center', gridColumn: '1/-1' }}>No events found on blockchain.</p>
                     )}
                 </div>
             </div>
 
-            {/* MODAL BELI */}
+            {/* MODAL BELI (Versi HP ramah jempol) */}
             {buyModal && (
                 <div onClick={() => setBuyModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,10,30,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center' }}>
                     <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: isMobile ? '24px 24px 0 0' : '24px', padding: '32px', width: isMobile ? '100%' : '400px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: 800, textAlign: 'center' }}>Confirm Purchase</h3>
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: 800, textAlign: 'center', margin: 0 }}>Confirm Purchase</h3>
+                        <p style={{ textAlign: 'center', color: '#9896B0', margin: '12px 0 24px' }}>You are minting <b>{buyModal.name}</b></p>
+                        <div style={{ display: 'flex', gap: '12px' }}>
                             <button onClick={() => setBuyModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', fontWeight: 700 }}>Cancel</button>
                             <button 
-                                onClick={() => {
-                                    writeContract({
-                                        address: CONTRACT_ADDRESS,
-                                        abi: CONTRACT_ABI,
-                                        functionName: 'mintTicket',
-                                        args: [buyModal.id, 'General', 'ipfs://default'],
-                                        value: buyModal.price
-                                    })
-                                    setBuyModal(null)
-                                }}
+                                onClick={() => writeContract({
+                                    address: CONTRACT_ADDRESS,
+                                    abi: CONTRACT_ABI,
+                                    functionName: 'mintTicket',
+                                    args: [buyModal.id, 'General', 'ipfs://default'],
+                                    value: buyModal.price
+                                })} 
                                 style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700 }}>
-                                {isBuying ? 'Processing...' : 'Pay Now'}
+                                {isBuying ? 'Confirming...' : 'Pay Now'}
                             </button>
                         </div>
                     </div>
