@@ -6,7 +6,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-import Navbar from '@/components/Navbar'
+import Navbar from '@/components/layout/Navbar'
 
 // Komponen Event: Adaptasi Tampilan HP vs Laptop
 function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) => void, isMobile: boolean }) {
