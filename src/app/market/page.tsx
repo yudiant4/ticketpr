@@ -1,4 +1,4 @@
-'use client' // Pastikan tidak ada tanda // di depannya!
+'use client'
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -6,9 +6,10 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-import Navbar from '@/components/layout/Navbar'
+// Sesuai foto explorer kamu: folder components ada di dalam app
+import Navbar from '../components/Navbar' 
 
-// --- HELPER: Mengubah alamat IPFS menjadi URL yang bisa dibaca Browser ---
+// --- HELPER IPFS ---
 const getIPFSUrl = (ipfsUri: string) => {
     if (!ipfsUri) return "";
     if (ipfsUri.startsWith("ipfs://")) {
@@ -22,7 +23,7 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
     const { data: event, isLoading } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
-        functionName: 'getEventDetails',
+        functionName: 'getEventDetails', 
         args: [id],
     })
 
@@ -36,18 +37,17 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
     const imageUri = obj.uri || obj.metadataURI || obj[6] || "";
 
     return (
-        <div style={{
-            background: 'white', border: '1px solid #E8E4F5', borderRadius: '20px',
-            overflow: 'hidden', display: 'flex', flexDirection: isMobile ? 'column' : 'row',
-            transition: 'transform 0.2s'
+        <div style={{ 
+            background: 'white', border: '1px solid #E8E4F5', borderRadius: '20px', 
+            overflow: 'hidden', display: 'flex', flexDirection: isMobile ? 'column' : 'row'
         }}>
-            <div style={{
+            <div style={{ 
                 width: isMobile ? '100%' : '180px', height: isMobile ? '200px' : 'auto',
                 background: '#F3F0FF', flexShrink: 0, position: 'relative'
             }}>
                 {imageUri ? (
-                    <img
-                        src={getIPFSUrl(imageUri)}
+                    <img 
+                        src={getIPFSUrl(imageUri)} 
                         alt={name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => { (e.target as any).src = "https://via.placeholder.com/180x240?text=No+Image" }}
@@ -60,7 +60,7 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
             <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0F0A1E' }}>{name}</h3>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>{name}</h3>
                         <span style={{ background: '#F3F0FF', color: '#7C3AED', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>#{id.toString()}</span>
                     </div>
                     <p style={{ fontSize: '13px', color: '#7C3AED', fontWeight: 600, margin: '4px 0' }}>📍 {location}</p>
@@ -74,11 +74,7 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
                     </div>
                     <button
                         onClick={() => onBuy({ id, name, price })}
-                        style={{
-                            background: 'linear-gradient(135deg,#7C3AED,#A855F7)',
-                            color: 'white', border: 'none', borderRadius: '50px',
-                            padding: '10px 22px', fontSize: '13px', fontWeight: 700, cursor: 'pointer'
-                        }}>
+                        style={{ background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '50px', padding: '10px 22px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
                         Get Ticket
                     </button>
                 </div>
@@ -87,7 +83,6 @@ function EventItem({ id, onBuy, isMobile }: { id: bigint, onBuy: (event: any) =>
     )
 }
 
-// --- HALAMAN UTAMA MARKET ---
 export default function MarketPage() {
     const { isConnected } = useAccount()
     const [buyModal, setBuyModal] = useState<any | null>(null)
@@ -120,11 +115,7 @@ export default function MarketPage() {
             </div>
 
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '24px 16px' : '40px 48px' }}>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)',
-                    gap: isMobile ? '16px' : '24px'
-                }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap: isMobile ? '16px' : '24px' }}>
                     {eventCount && Number(eventCount) > 0 ? (
                         Array.from({ length: Number(eventCount) }).map((_, i) => (
                             <EventItem key={i} id={BigInt(i + 1)} isMobile={isMobile} onBuy={(ev) => setBuyModal(ev)} />
@@ -135,15 +126,14 @@ export default function MarketPage() {
                 </div>
             </div>
 
-            {/* MODAL BELI */}
             {buyModal && (
                 <div onClick={() => setBuyModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,10,30,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center' }}>
                     <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: isMobile ? '24px 24px 0 0' : '24px', padding: '32px', width: isMobile ? '100%' : '400px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: 800, textAlign: 'center', margin: 0 }}>Confirm Purchase</h3>
+                        <h3 style={{ fontSize: '20px', fontWeight: 800, textAlign: 'center' }}>Confirm Purchase</h3>
                         <p style={{ textAlign: 'center', color: '#9896B0', margin: '12px 0 24px' }}>Minting ticket for <b>{buyModal.name}</b></p>
                         <div style={{ display: 'flex', gap: '12px' }}>
-                            <button onClick={() => setBuyModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
-                            <button
+                            <button onClick={() => setBuyModal(null)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', fontWeight: 700 }}>Cancel</button>
+                            <button 
                                 onClick={() => {
                                     writeContract({
                                         address: CONTRACT_ADDRESS,
@@ -154,7 +144,7 @@ export default function MarketPage() {
                                     })
                                     setBuyModal(null)
                                 }}
-                                style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700, cursor: 'pointer' }}>
+                                style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700 }}>
                                 {isBuying ? 'Processing...' : 'Pay Now'}
                             </button>
                         </div>
