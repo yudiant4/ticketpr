@@ -30,7 +30,8 @@ html {
 }
 
 body {
-  font-family: var(--font-jakarta), sans-serif;
+  /* Pastikan --font-jakarta ada di layout.tsx, atau ganti ke sans-serif dulu untuk tes */
+  font-family: var(--font-jakarta, 'Plus Jakarta Sans'), sans-serif;
   background: var(--bg2);
   color: var(--text);
   overflow-x: hidden;
