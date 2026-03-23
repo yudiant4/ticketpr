@@ -3,26 +3,50 @@
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useState } from 'react'
-import { useAccount } from 'wagmi'
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseEther, formatEther } from 'viem'
 import { sepolia } from 'wagmi/chains'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 
-// Komponen Kecil untuk menampilkan masing-masing Event dari Blockchain
+// Komponen Kecil: Menampilkan 1 Event Asli dari Blockchain
 function EventItem({ id, onBuy }: { id: bigint, onBuy: (event: any) => void }) {
-    // 1. MENGGUNAKAN getEventDetails untuk ambil data asli
-    const { data: event } = useReadContract({
+    const { data: event, isError, isLoading } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
         functionName: 'getEventDetails',
         args: [id],
     })
 
-    if (!event) return null;
+    // Kalau masih loading atau error, jangan tampilkan apa-apa dulu biar nggak crash
+    if (isLoading) return <div style={{ padding: '20px', color: '#9896B0' }}>⏳ Loading Event #{id.toString()}...</div>;
+    if (isError || !event) return null;
 
-    // Mapping data dari contract (asumsi urutan: name, date, location, price, supply, royalty, uri)
-    const [name, date, location, price, maxSupply, royalty, uri] = event as any;
+    // --- PERBAIKAN ERROR "IS NOT ITERABLE" DI SINI ---
+    // Kita buat wadah aman untuk datanya
+    let name = "Unknown Event", date = "TBD", location = "Unknown Location", uri = "";
+    let price = BigInt(0);
+
+    try {
+        if (Array.isArray(event)) {
+            // Jika Wagmi membaca sebagai Array
+            name = event[0] || name;
+            date = event[1] || date;
+            location = event[2] || location;
+            price = event[3] != null ? BigInt(event[3]) : price;
+            uri = event[6] || "";
+        } else if (typeof event === 'object' && event !== null) {
+            // Jika Wagmi membaca sebagai Object (Viem v2 behavior)
+            const obj = event as any;
+            name = obj.name || obj[0] || name;
+            date = obj.date || obj[1] || date;
+            location = obj.location || obj[2] || location;
+            price = (obj.price != null || obj[3] != null) ? BigInt(obj.price || obj[3]) : price;
+            uri = obj.uri || obj.metadataURI || obj[6] || "";
+        }
+    } catch (e) {
+        console.error("Gagal membaca data event:", e);
+        return null; // Skip event ini kalau datanya rusak
+    }
 
     return (
         <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '20px', overflow: 'hidden', display: 'flex' }}>
@@ -54,7 +78,7 @@ function EventItem({ id, onBuy }: { id: bigint, onBuy: (event: any) => void }) {
     )
 }
 
-// Hook: Buy ticket (Disesuaikan agar dinamis)
+// Hook: Buy ticket
 function useBuyTicket() {
     const { writeContract, data: hash, isPending } = useWriteContract()
     const { isSuccess } = useWaitForTransactionReceipt({ hash })
@@ -64,7 +88,7 @@ function useBuyTicket() {
             address: CONTRACT_ADDRESS,
             abi: CONTRACT_ABI,
             functionName: 'mintTicket',
-            args: [eventId, 'General', 'ipfs://default'], // Argumen disesuaikan dengan event yang dipilih
+            args: [eventId, 'General', 'ipfs://default'],
             value: price,
             chainId: sepolia.id,
         })
@@ -78,7 +102,7 @@ export default function MarketPage() {
     const [buyModal, setBuyModal] = useState<any | null>(null)
     const [toast, setToast] = useState('')
 
-    // 2. AMBIL TOTAL EVENT DARI CONTRACT
+    // Ambil Total Event dari Smart Contract
     const { data: eventCount } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
@@ -94,7 +118,7 @@ export default function MarketPage() {
 
     return (
         <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FAFAFF', minHeight: '100vh', color: '#0F0A1E' }}>
-            {/* NAVBAR (Tetap sama) */}
+            {/* NAVBAR */}
             <nav style={{ position: 'sticky', top: 0, zIndex: 100, padding: '0 48px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E8E4F5' }}>
                 <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '20px', color: '#0F0A1E', textDecoration: 'none' }}>
                     <div style={{ width: '34px', height: '34px', background: 'linear-gradient(135deg,#7C3AED,#EC4899)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎟️</div>
@@ -121,22 +145,21 @@ export default function MarketPage() {
                 <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '24px' }}>Active Events</h2>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '20px' }}>
-                    {/* 3. LOOPING BERDASARKAN JUMLAH EVENT DI CONTRACT */}
                     {eventCount && Number(eventCount) > 0 ? (
                         Array.from({ length: Number(eventCount) }).map((_, i) => (
                             <EventItem
-                                key={i}
+                                key={`event-${i}`}
                                 id={BigInt(i + 1)}
                                 onBuy={(ev) => isConnected ? setBuyModal(ev) : showToast('🔗 Connect wallet first!')}
                             />
                         ))
                     ) : (
-                        <p style={{ color: '#9896B0' }}>No events found on the blockchain.</p>
+                        <p style={{ color: '#9896B0' }}>No events found on the blockchain. Be the first to create one!</p>
                     )}
                 </div>
             </div>
 
-            {/* BUY MODAL (Disesuaikan data blockchain) */}
+            {/* BUY MODAL */}
             {buyModal && (
                 <div onClick={() => setBuyModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,10,30,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '24px', padding: '40px', width: '420px', boxShadow: '0 32px 80px rgba(0,0,0,0.25)' }}>
@@ -163,7 +186,7 @@ export default function MarketPage() {
                 </div>
             )}
 
-            {/* TOAST (Tetap sama) */}
+            {/* TOAST */}
             {toast && (
                 <div style={{ position: 'fixed', bottom: '28px', right: '28px', zIndex: 999, background: '#0F0A1E', color: 'white', padding: '14px 20px', borderRadius: '14px', fontSize: '13px', fontWeight: 600 }}>
                     {toast}
