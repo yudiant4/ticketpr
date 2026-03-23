@@ -28,6 +28,7 @@ export default function CreateEventPage() {
 
   const categories = ['🎵 Music', '🎨 Art', '💻 Tech', '🏟️ Sports', '🎭 Theater', '🚀 Web3', '🕹️ Gaming']
 
+  // Fungsi validasi yang dibagi per Step
   const validate = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
 
@@ -45,45 +46,46 @@ export default function CreateEventPage() {
     return Object.keys(newErrors).length === 0
   }
 
- const handleSubmit = async () => {
-  if (!validate(2)) return; 
-  if (!file) {
-    alert("Please upload an event poster!");
-    return;
-  }
+  // Fungsi Submit yang sudah diperbaiki argumennya (7 argumen)
+  const handleSubmit = async () => {
+    if (!validate(2)) return; // Cek validasi harga/supply dulu
+    if (!file) {
+      alert("Please upload an event poster!");
+      return;
+    }
 
-  setUploading(true);
-  try {
-    // 1. Upload ke Pinata
-    const formData = new FormData();
-    formData.append("file", file);
+    setUploading(true);
+    try {
+      // 1. Upload ke Pinata
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const res = await fetch("/api/pinata", { // Pastikan kamu sudah punya API route ini
-      method: "POST",
-      body: formData,
-    });
-    
-    const { ipfsHash } = await res.json();
-    const metadataURI = `ipfs://${ipfsHash}`;
+      const res = await fetch("/api/pinata", {
+        method: "POST",
+        body: formData,
+      });
 
-    // 2. Panggil fungsi Smart Contract dengan metadataURI
-    createEvent(
-      form.name,
-      form.date,
-      `${form.venue}, ${form.city}`,
-      form.price,
-      BigInt(form.maxSupply),
-      parseInt(form.royalty),
-      metadataURI // <--- Masukkan link gambar di sini
-    );
+      const { ipfsHash } = await res.json();
+      const metadataURI = `ipfs://${ipfsHash}`;
 
-  } catch (err) {
-    console.error("Upload/Deploy failed:", err);
-    alert("Failed to create event. Check console.");
-  } finally {
-    setUploading(false);
-  }
-};
+      // 2. Panggil Smart Contract dengan 7 ARGUMEN (PENTING!)
+      await createEvent(
+        form.name,
+        form.date,
+        `${form.venue}, ${form.city}`,
+        form.price,
+        BigInt(form.maxSupply),
+        parseInt(form.royalty), // <--- Royalti (Data ke-6)
+        metadataURI             // <--- Metadata (Data ke-7)
+      );
+
+    } catch (err) {
+      console.error("Upload/Deploy failed:", err);
+      alert("Failed to create event. Check console.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const inputStyle = (field: string) => ({
     width: '100%', padding: '12px 16px',
@@ -176,7 +178,7 @@ export default function CreateEventPage() {
           ))}
         </div>
 
-        {/* FORM */}
+        {/* FORM CONTAINER */}
         <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '24px', padding: '40px', marginBottom: '32px' }}>
 
           {/* Step 1 — Event Info */}
@@ -245,6 +247,7 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
+              {/* TOMBOL STEP 1 */}
               <button onClick={() => { if (validate(1)) setStep(2) }}
                 style={{ marginTop: '32px', width: '100%', padding: '16px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Next: Ticket Config →
@@ -312,12 +315,13 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
+              {/* TOMBOL STEP 2 */}
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button onClick={() => setStep(1)}
                   style={{ flex: 1, padding: '16px', background: 'white', color: '#0F0A1E', border: '1.5px solid #E8E4F5', borderRadius: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   ← Back
                 </button>
-                <button onClick={() => setStep(3)}
+                <button onClick={() => { if (validate(2)) setStep(3) }}
                   style={{ flex: 2, padding: '16px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                   Next: Review & Deploy →
                 </button>
@@ -356,18 +360,20 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
+              {/* TOMBOL STEP 3 */}
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => { if (validate(2)) setStep(3) }}
+                <button onClick={() => setStep(2)}
                   style={{ flex: 1, padding: '16px', background: 'white', color: '#0F0A1E', border: '1.5px solid #E8E4F5', borderRadius: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   ← Back
                 </button>
-                <button onClick={handleSubmit} disabled={isPending || isConfirming}
-                  style={{ flex: 2, padding: '16px', background: isPending || isConfirming ? '#A855F7' : 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: isPending || isConfirming ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-                  {isPending ? '⏳ Waiting for MetaMask...' : isConfirming ? '⛓️ Deploying to blockchain...' : '🚀 Deploy Event to Blockchain'}
+                <button onClick={handleSubmit} disabled={uploading || isPending || isConfirming}
+                  style={{ flex: 2, padding: '16px', background: uploading || isPending || isConfirming ? '#A855F7' : 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: uploading || isPending || isConfirming ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+                  {uploading ? '📁 Uploading Image...' : isPending ? '⏳ Waiting for MetaMask...' : isConfirming ? '⛓️ Deploying...' : '🚀 Deploy Event to Blockchain'}
                 </button>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </main>
