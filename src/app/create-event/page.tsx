@@ -75,7 +75,7 @@ export default function CreateEventPage() {
         `${form.venue}, ${form.city}`,
         form.price,
         BigInt(form.maxSupply),
-        metadataURI             // <--- Ini Data ke-6 (Terakhir)
+        metadataURI,           // <--- Ini Data ke-6 (Terakhir)
       );
 
     } catch (err) {
