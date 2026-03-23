@@ -68,7 +68,7 @@ const contractPrice = contractEvent
     }
   }, [error])
 
-const handleMint = async () => {
+  const handleMint = async () => {
     if (!isConnected) {
       setMintError('Please connect your wallet first!');
       return;
@@ -88,7 +88,7 @@ const handleMint = async () => {
       );
     } catch (err: any) {
       const msg = err?.message || '';
-      console.error("Mint Error Details:", err); // Log untuk debug
+      console.error("Mint Error Details:", err);
 
       if (msg.includes('User rejected') || msg.includes('user rejected')) {
         setMintError('❌ Transaction rejected in MetaMask.');
