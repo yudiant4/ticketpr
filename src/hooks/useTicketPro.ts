@@ -32,7 +32,7 @@ export function useMyTickets() {
 }
 
 export function useTicket(tokenId: bigint) {
-  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getTicket', args: [tokenId], chainId: sepolia.id, query: { enabled: tokenId > BigInt(0) } })
+  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getEventDetails', args: [tokenId], chainId: sepolia.id, query: { enabled: tokenId > BigInt(0) } })
 }
 
 // INI FUNGSI MINT YANG SUDAH DIPERBAIKI (Ada API Metadata + writeContractAsync)
