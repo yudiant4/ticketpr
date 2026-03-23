@@ -18,6 +18,7 @@ async function main() {
       price: '0.01',
       maxSupply: 1000,
       royalty: 500,
+      metadataURI: 'ipfs://QmDummyHash1' // <-- Sudah ditambahkan nilainya
     },
     {
       name: 'Neon City Rave Vol. 3',
@@ -26,6 +27,7 @@ async function main() {
       price: '0.008',
       maxSupply: 800,
       royalty: 500,
+      metadataURI: 'ipfs://QmDummyHash2'
     },
     {
       name: 'Block Summit 2026',
@@ -34,6 +36,7 @@ async function main() {
       price: '0.005',
       maxSupply: 2000,
       royalty: 300,
+      metadataURI: 'ipfs://QmDummyHash3'
     },
     {
       name: 'Metamorphosis Art Fair',
@@ -42,6 +45,7 @@ async function main() {
       price: '0.007',
       maxSupply: 600,
       royalty: 500,
+      metadataURI: 'ipfs://QmDummyHash4'
     },
     {
       name: 'Web3 Culture Festival',
@@ -50,6 +54,7 @@ async function main() {
       price: '0.006',
       maxSupply: 1500,
       royalty: 400,
+      metadataURI: 'ipfs://QmDummyHash5'
     },
     {
       name: 'DeFi Launchpad Night',
@@ -58,6 +63,7 @@ async function main() {
       price: '0.005',
       maxSupply: 500,
       royalty: 300,
+      metadataURI: 'ipfs://QmDummyHash6'
     },
   ]
 
@@ -79,7 +85,7 @@ async function main() {
       ethers.parseEther(ev.price),
       BigInt(ev.maxSupply),
       500,
-      ev.metadataURI
+      (ev as any).metadataURI // <-- Ditambahkan 'as any' agar Vercel 100% aman
     )
     await tx.wait()
     console.log(`✅ Event ${i + 1} created!`)

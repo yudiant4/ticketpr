@@ -28,7 +28,6 @@ export default function CreateEventPage() {
 
   const categories = ['🎵 Music', '🎨 Art', '💻 Tech', '🏟️ Sports', '🎭 Theater', '🚀 Web3', '🕹️ Gaming']
 
-  // Fungsi validasi yang dibagi per Step
   const validate = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
 
@@ -46,9 +45,9 @@ export default function CreateEventPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  // Fungsi Submit yang sudah diperbaiki argumennya (7 argumen)
+  // --- PERBAIKAN DI SINI (handleSubmit) ---
   const handleSubmit = async () => {
-    if (!validate(2)) return; // Cek validasi harga/supply dulu
+    if (!validate(2)) return;
     if (!file) {
       alert("Please upload an event poster!");
       return;
@@ -65,18 +64,18 @@ export default function CreateEventPage() {
         body: formData,
       });
 
-      const { ipfsHash } = await res.json();
-      const metadataURI = `ipfs://${ipfsHash}`;
+      const data = await res.json();
+      const metadataURI = `ipfs://${data.ipfsHash}`;
 
-      // 2. Panggil Smart Contract dengan 7 ARGUMEN (PENTING!)
+      // 2. Panggil Smart Contract (HANYA 6 ARGUMEN agar tidak error)
+      // Royalti dihapus dari pemanggilan karena Kontrak tidak memintanya
       await createEvent(
         form.name,
         form.date,
         `${form.venue}, ${form.city}`,
         form.price,
         BigInt(form.maxSupply),
-        parseInt(form.royalty), // <--- Royalti (Data ke-6)
-        metadataURI             // <--- Metadata (Data ke-7)
+        metadataURI             // <--- Ini Data ke-6 (Terakhir)
       );
 
     } catch (err) {
@@ -247,7 +246,6 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              {/* TOMBOL STEP 1 */}
               <button onClick={() => { if (validate(1)) setStep(2) }}
                 style={{ marginTop: '32px', width: '100%', padding: '16px', background: 'linear-gradient(135deg,#7C3AED,#A855F7)', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Next: Ticket Config →
@@ -269,7 +267,6 @@ export default function CreateEventPage() {
                       placeholder="e.g. 0.01"
                       style={inputStyle('price')} />
                     {errors.price && <div style={{ fontSize: '12px', color: '#DC2626', marginTop: '4px' }}>{errors.price}</div>}
-                    {form.price && <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '4px' }}>≈ ${(parseFloat(form.price || '0') * 3600).toFixed(2)} USD</div>}
                   </div>
                   <div>
                     <label style={labelStyle}>Max Supply (tickets) *</label>
@@ -294,7 +291,6 @@ export default function CreateEventPage() {
                   <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '6px' }}>You earn {parseInt(form.royalty) / 100}% every time ticket is resold</div>
                 </div>
 
-                {/* Preview */}
                 <div style={{ background: '#F3F0FF', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '16px', padding: '20px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#7C3AED', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Preview</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -315,7 +311,6 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              {/* TOMBOL STEP 2 */}
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button onClick={() => setStep(1)}
                   style={{ flex: 1, padding: '16px', background: 'white', color: '#0F0A1E', border: '1.5px solid #E8E4F5', borderRadius: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -360,7 +355,6 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              {/* TOMBOL STEP 3 */}
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button onClick={() => setStep(2)}
                   style={{ flex: 1, padding: '16px', background: 'white', color: '#0F0A1E', border: '1.5px solid #E8E4F5', borderRadius: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
