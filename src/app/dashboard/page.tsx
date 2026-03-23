@@ -30,7 +30,7 @@ export default function DashboardPage() {
     const { data: myTickets, isLoading } = useReadContract({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
-        functionName: 'getOwnedTickets', // Sesuaikan dengan nama fungsi di kontrakmu
+        functionName: 'getTicketsByOwner', // Sesuaikan dengan nama fungsi di kontrakmu
         args: [address],
     })
 
