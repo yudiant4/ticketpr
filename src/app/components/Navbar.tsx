@@ -1,6 +1,17 @@
 'use client'
 
 import Link from 'next/link'
+import React from 'react'
+
+// Deklarasi tipe langsung di dalam file agar Vercel pasti membacanya
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'w3m-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      'w3m-network-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
 
 export default function Navbar() {
   return (
