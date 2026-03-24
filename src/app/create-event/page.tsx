@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
+import { parseEther } from 'viem'
 import { useCreateEvent } from '@/hooks/useTicketPro'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -91,7 +92,7 @@ export default function CreateEventPage() {
                 form.name,
                 form.date,
                 `${form.venue}, ${form.city}`,
-                form.price || '0',
+                parseEther(form.price || '0'),
                 BigInt(form.maxSupply || '0'),
                 BigInt(form.royalty || '500'),
                 `ipfs://${data.ipfsHash}`
