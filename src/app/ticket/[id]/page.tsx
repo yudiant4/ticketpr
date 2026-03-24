@@ -116,7 +116,7 @@ export default function TicketDetail({ params }: { params: { id: string } }) {
           <Link href="/market" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
           <Link href="/verify" style={{ fontSize: '14px', fontWeight: 500, color: '#4B4869', textDecoration: 'none' }}>Verify</Link>
         </div>
-        <ConnectButton />
+        <w3m-button />
       </nav>
 
       {/* BREADCRUMB */}

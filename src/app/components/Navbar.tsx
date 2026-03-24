@@ -1,23 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 
+// Memberitahu TypeScript bahwa tag w3m-button itu aman digunakan
 declare global {
   namespace JSX {
     interface IntrinsicElements {
       'w3m-button': any;
     }
   }
-}
-
-export default function Navbar() {
-  return (
-    <nav>
-      {/* ... kode navbar kamu ... */}
-      <w3m-button />
-    </nav>
-  )
 }
 
 export default function Navbar() {
@@ -33,7 +24,6 @@ export default function Navbar() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
         <Link href="/" style={{ textDecoration: 'none', color: '#0F0A1E', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Logo Brand dengan SVG Icon profesional */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="24" height="24" rx="6" fill="url(#brand-grad)" />
