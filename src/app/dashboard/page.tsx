@@ -1,16 +1,17 @@
 'use client'
 
+// PERBAIKAN: Wajib agar data wallet & contract terbaca dinamis di Vercel
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useAccount, useReadContract, useBalance } from 'wagmi' // Tambah useBalance
+import { useAccount, useReadContract, useBalance } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import { QRCodeSVG } from 'qrcode.react'
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 
-// --- TICKET CARD FLIP ---
+
+// --- TICKET CARD COMPONENT ---
 const TicketCard = ({ ticketId }: { ticketId: string }) => {
   const [isFlipped, setIsFlipped] = useState(false)
   return (
@@ -25,23 +26,31 @@ const TicketCard = ({ ticketId }: { ticketId: string }) => {
         </div>
         <div style={{ position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', background: 'white', border: '2px solid #E8E4F5', borderRadius: '24px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: 'rotateY(180deg)' }}>
           <QRCodeSVG value={ticketId} size={150} />
-          <div style={{ marginTop: '20px', fontWeight: 800, color: '#0F0A1E' }}>Ticket #{ticketId}</div>
-          <div style={{ fontSize: '12px', color: '#9896B0', marginTop: '4px' }}>Scan at Gate 🎫</div>
+          <div style={{ marginTop: '20px', fontWeight: 800 }}>Ticket #{ticketId}</div>
+          <div style={{ fontSize: '12px', color: '#9896B0' }}>Scan at Event Gate 🎫</div>
         </div>
       </div>
     </div>
   )
 }
 
+// --- TOGGLE SWITCH ---
+const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean, onToggle: () => void }) => (
+  <div onClick={onToggle} style={{ width: '44px', height: '24px', background: isOn ? '#7C3AED' : '#E8E4F5', borderRadius: '50px', position: 'relative', cursor: 'pointer', transition: '0.3s' }}>
+    <div style={{ width: '20px', height: '20px', background: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: isOn ? '22px' : '2px', transition: '0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
+  </div>
+)
+
 export default function DashboardPage() {
-  const { address, isConnected, chain } = useAccount()
-  const { data: balance } = useBalance({ address }) // MENGAMBIL SALDO ASLI
+  const { address, isConnected } = useAccount()
+  const { data: balance } = useBalance({ address })
   const [activeTab, setActiveTab] = useState('upcoming')
   const [username, setUsername] = useState('')
   const [isMobile, setIsMobile] = useState(false)
 
-  // Fungsi untuk memendekkan alamat wallet (Contoh: 0x123...456)
-  const truncateAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  // Settings State
+  const [hideSpam, setHideSpam] = useState(true)
+  const [testnetMode, setTestnetMode] = useState(true)
 
   const { data: myTickets } = useReadContract({
     address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getTicketsByOwner', args: address ? [address] : undefined,
@@ -57,18 +66,30 @@ export default function DashboardPage() {
 
   if (!isConnected) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-        <div style={{ fontSize: '50px' }}>🔑</div>
-        <h2 style={{ fontWeight: 800, margin: '20px 0' }}>Please connect your wallet</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF' }}>
+        <h2 style={{ fontWeight: 800, marginBottom: '20px' }}>Please connect your wallet 🔑</h2>
         <w3m-button />
       </div>
+    )
+  }
+
+  const SidebarItem = ({ label, tabId, icon, isLink = false, linkUrl = "/" }: any) => {
+    const isActive = activeTab === tabId;
+    return isLink ? (
+      <Link href={linkUrl} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', textDecoration: 'none', color: '#4B4869', fontWeight: 600, marginBottom: '6px', transition: '0.2s' }}>
+        <span style={{ fontSize: '18px' }}>{icon}</span> <span style={{ fontSize: '14px' }}>{label}</span>
+      </Link>
+    ) : (
+      <button onClick={() => setActiveTab(tabId)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', width: '100%', border: 'none', background: isActive ? '#F3F0FF' : 'transparent', color: isActive ? '#7C3AED' : '#4B4869', fontWeight: isActive ? 700 : 600, cursor: 'pointer', marginBottom: '6px', textAlign: 'left', transition: '0.2s' }}>
+        <span style={{ fontSize: '18px' }}>{icon}</span> <span style={{ fontSize: '14px' }}>{label}</span>
+      </button>
     )
   }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       
-      {/* SIDEBAR */}
+      {/* SIDEBAR LENGKAP */}
       <aside style={{ width: '280px', background: 'white', borderRight: '1px solid #E8E4F5', display: isMobile ? 'none' : 'flex', flexDirection: 'column', position: 'fixed', height: '100vh' }}>
         <div style={{ padding: '24px', borderBottom: '1px solid #E8E4F5' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -76,73 +97,111 @@ export default function DashboardPage() {
             <span style={{ fontWeight: 800, fontSize: '20px', color: '#0F0A1E' }}>Ticket<span style={{ color: '#7C3AED' }}>Pro</span></span>
           </Link>
         </div>
-        <div style={{ padding: '20px 16px', flex: 1 }}>
-          <button onClick={() => setActiveTab('upcoming')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '12px', width: '100%', border: 'none', background: activeTab === 'upcoming' ? '#F3F0FF' : 'transparent', color: activeTab === 'upcoming' ? '#7C3AED' : '#4B4869', fontWeight: 700, cursor: 'pointer', marginBottom: '4px' }}>🖼️ My NFTs</button>
-          <button onClick={() => setActiveTab('profile')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '12px', width: '100%', border: 'none', background: activeTab === 'profile' ? '#F3F0FF' : 'transparent', color: activeTab === 'profile' ? '#7C3AED' : '#4B4869', fontWeight: 700, cursor: 'pointer', marginBottom: '4px' }}>👤 Profile</button>
-          <Link href="/market" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '12px', textDecoration: 'none', color: '#4B4869', fontWeight: 600 }}>🛒 Marketplace</Link>
+
+        <div style={{ padding: '24px 16px', flex: 1 }}>
+          <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', marginBottom: '16px', paddingLeft: '16px', letterSpacing: '1px' }}>MAIN MENU</div>
+          <SidebarItem label="My Collections" tabId="upcoming" icon="🖼️" />
+          <SidebarItem label="My Earnings" tabId="earnings" icon="💰" />
+          
+          <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>EXPLORE</div>
+          <SidebarItem label="Market" isLink={true} linkUrl="/market" icon="🛍️" />
+          <SidebarItem label="Verify Ticket" isLink={true} linkUrl="/verify" icon="🛡️" />
+
+          <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>PERSONAL</div>
+          <SidebarItem label="Profile" tabId="profile" icon="👤" />
+          <SidebarItem label="Settings" tabId="settings" icon="⚙️" />
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
+      {/* CONTENT AREA */}
       <main style={{ flex: 1, marginLeft: isMobile ? '0' : '280px', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: isMobile ? '20px' : '40px', flex: 1 }}>
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ padding: isMobile ? '24px' : '48px', flex: 1 }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 800 }}>
-                Welcome, {username || truncateAddress(address as string)} 👋
+              <h1 style={{ fontSize: '32px', fontWeight: 800 }}>
+                {activeTab === 'earnings' ? 'Financial Overview 💰' : activeTab === 'settings' ? 'Dashboard Settings ⚙️' : `Hello, ${username || 'Collector'} 👋`}
               </h1>
-              <p style={{ color: '#9896B0', fontSize: '14px' }}>Manage your digital assets and account</p>
+              <p style={{ color: '#9896B0', marginTop: '4px' }}>Welcome to your Web3 ticketing hub.</p>
             </div>
             <w3m-button />
           </header>
 
+          {/* TAB: MY COLLECTIONS */}
           {activeTab === 'upcoming' && (
-            <div>
-              {/* STATS REAL DARI WALLET */}
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
-                  <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Real Balance 💰</div>
-                  <div style={{ fontSize: '24px', fontWeight: 800, marginTop: '5px' }}>
-                    {balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.00 ETH'}
-                  </div>
+            <div className="fade-in">
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '24px', marginBottom: '48px' }}>
+                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Balance</div>
+                  <div style={{ fontSize: '26px', fontWeight: 800, marginTop: '8px' }}>{balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.00 ETH'}</div>
                 </div>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
-                  <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Tickets Owned 🎫</div>
-                  <div style={{ fontSize: '24px', fontWeight: 800, marginTop: '5px' }}>{(myTickets as any)?.length || 0} Items</div>
-                </div>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
-                  <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Network ⛓️</div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, marginTop: '5px', color: '#10B981' }}>{chain?.name || 'Unknown'}</div>
+                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Total NFTs</div>
+                  <div style={{ fontSize: '26px', fontWeight: 800, marginTop: '8px' }}>{(myTickets as any)?.length || 0} Tickets</div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
                 {myTickets && (myTickets as any).length > 0 ? (
                   (myTickets as any).map((id: any) => <TicketCard key={id.toString()} ticketId={id.toString()} />)
                 ) : (
-                  <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', background: 'white', borderRadius: '24px', border: '2px dashed #E8E4F5' }}>
-                    <p>No tickets found in your wallet 💨</p>
+                  <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '80px', background: 'white', borderRadius: '32px', border: '2px dashed #E8E4F5' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>Empty 💨</div>
+                    <p style={{ color: '#9896B0', marginBottom: '24px' }}>You haven't minted any tickets yet.</p>
+                    <Link href="/market" style={{ background: '#7C3AED', color: 'white', padding: '14px 28px', borderRadius: '50px', textDecoration: 'none', fontWeight: 700 }}>Go to Market</Link>
                   </div>
                 )}
               </div>
             </div>
           )}
 
+          {/* TAB: EARNINGS */}
+          {activeTab === 'earnings' && (
+            <div style={{ maxWidth: '800px' }}>
+              <div style={{ background: 'linear-gradient(135deg, #10B981, #059669)', padding: '40px', borderRadius: '32px', color: 'white', marginBottom: '32px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 600, opacity: 0.9 }}>Available for Withdrawal</div>
+                <div style={{ fontSize: '42px', fontWeight: 800, margin: '12px 0' }}>1.24 ETH</div>
+                <button style={{ background: 'white', color: '#059669', border: 'none', padding: '14px 28px', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}>Withdraw to Wallet 🏦</button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
+                  <div style={{ color: '#9896B0', fontSize: '13px' }}>Secondary Sales Royalty</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '4px' }}>0.082 ETH</div>
+                </div>
+                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
+                  <div style={{ color: '#9896B0', fontSize: '13px' }}>Direct Ticket Sales</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '4px' }}>1.158 ETH</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: SETTINGS */}
+          {activeTab === 'settings' && (
+            <div style={{ background: 'white', padding: '40px', borderRadius: '32px', border: '1px solid #E8E4F5', maxWidth: '600px' }}>
+              <h3 style={{ fontWeight: 800, marginBottom: '24px' }}>App Preferences</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid #F3F0FF' }}>
+                <div><div style={{ fontWeight: 700 }}>Testnet Mode ⛓️</div><div style={{ fontSize: '12px', color: '#9896B0' }}>Show data from Sepolia network.</div></div>
+                <ToggleSwitch isOn={testnetMode} onToggle={() => setTestnetMode(!testnetMode)} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0' }}>
+                <div><div style={{ fontWeight: 700 }}>Hide Spam NFTs 🛡️</div><div style={{ fontSize: '12px', color: '#9896B0' }}>Hide unverified ticket collections.</div></div>
+                <ToggleSwitch isOn={hideSpam} onToggle={() => setHideSpam(!hideSpam)} />
+              </div>
+            </div>
+          )}
+
+          {/* TAB: PROFILE */}
           {activeTab === 'profile' && (
             <div style={{ background: 'white', padding: '40px', borderRadius: '32px', border: '1px solid #E8E4F5', maxWidth: '600px' }}>
-              <h2 style={{ marginBottom: '24px', fontWeight: 800 }}>My Profile 👤</h2>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Connected Address 🔑</label>
-                <input disabled value={address} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #F3F0FF', background: '#FAFAFF', color: '#9896B0', fontSize: '14px' }} />
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Display Name ✨</label>
+                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Yudi Anto" style={{ width: '100%', padding: '16px', borderRadius: '14px', border: '1.5px solid #F3F0FF', outlineColor: '#7C3AED', fontSize: '16px' }} />
               </div>
-              <div style={{ marginBottom: '30px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Custom Username ✨</label>
-                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. Yudi Anto" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #F3F0FF', outlineColor: '#7C3AED' }} />
-              </div>
-              <button onClick={() => { localStorage.setItem('tp_username', username); alert('Profile Saved! ✅'); }} style={{ width: '100%', padding: '16px', background: '#0F0A1E', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Save Changes</button>
+              <button onClick={() => { localStorage.setItem('tp_username', username); alert('Profile updated! ✅'); }} style={{ width: '100%', padding: '16px', background: '#0F0A1E', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Update Profile</button>
             </div>
           )}
         </div>
+
         <Footer />
       </main>
     </div>
