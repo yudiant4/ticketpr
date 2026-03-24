@@ -79,7 +79,6 @@ export default function DashboardLayout() {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 <h2 style={{ fontWeight: 800, color: '#0F0A1E', marginBottom: '20px' }}>Please connect your wallet</h2>
-                {/* PERBAIKAN: Ganti ConnectButton menjadi w3m-button */}
                 <w3m-button />
                 <Link href="/" style={{ marginTop: '20px', color: '#7C3AED', fontWeight: 600, textDecoration: 'none' }}>Back to Home</Link>
             </div>
@@ -142,7 +141,6 @@ export default function DashboardLayout() {
                             </h1>
                         </div>
                     </div>
-                    {/* PERBAIKAN: Ganti ConnectButton menjadi w3m-button */}
                     <w3m-button />
                 </header>
 

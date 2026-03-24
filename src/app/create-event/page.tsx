@@ -1,5 +1,8 @@
 'use client'
 
+// PERBAIKAN: Menambahkan force-dynamic agar build Vercel lancar
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
@@ -56,7 +59,7 @@ export default function CreateEventPage() {
       const data = await res.json();
       const metadataURI = `ipfs://${data.ipfsHash}`;
 
-      // PERBAIKAN: Tambahkan fallback '0' agar BigInt tidak crash jika input kosong
+      // PERBAIKAN: Fallback '0' tetap dipertahankan agar aman dari crash
       await createEvent(
         form.name,
         form.date,
@@ -101,7 +104,7 @@ export default function CreateEventPage() {
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '20px 16px' : '32px 48px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-          {['Info', 'Config', 'Review'].map((s, i) => (
+          {['Info', 'Configuration', 'Review'].map((s, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < 2 ? 1 : 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: step >= i + 1 ? '#7C3AED' : 'white', border: '2px solid #7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', color: step >= i + 1 ? 'white' : '#7C3AED', fontWeight: 800, fontSize: '12px' }}>{i + 1}</div>
@@ -139,14 +142,14 @@ export default function CreateEventPage() {
               </div>
 
               <button onClick={() => validate(1) && setStep(2)} style={{ width: '100%', padding: '16px', background: '#7C3AED', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 700, marginTop: '20px', cursor: 'pointer' }}>
-                Next: Ticket Config
+                Next: Ticket Configuration
               </button>
             </div>
           )}
 
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Ticket Config</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Ticket Configuration</h2>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Price (ETH)</label>

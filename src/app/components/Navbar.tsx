@@ -2,15 +2,6 @@
 
 import Link from 'next/link'
 
-// Memberitahu TypeScript bahwa tag w3m-button itu aman digunakan
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'w3m-button': any;
-    }
-  }
-}
-
 export default function Navbar() {
   return (
     <nav style={{
