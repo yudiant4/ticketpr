@@ -1,16 +1,10 @@
-import { DetailedHTMLProps, HTMLAttributes } from 'react';
+export { };
 
 declare global {
     namespace JSX {
         interface IntrinsicElements {
-            'w3m-button': DetailedHTMLProps<HTMLAttributes<HTMLElement> & {
-                balance?: 'show' | 'hide';
-                size?: 'md' | 'sm';
-                label?: string;
-                loadingLabel?: string;
-            }, HTMLElement>;
-            'w3m-network-button': DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
+            'w3m-button': any;
+            'w3m-network-button': any;
         }
     }
 }
-export { };
