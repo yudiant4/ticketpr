@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-// Tambahkan deklarasi any agar Vercel tidak error saat build
+// Agar Vercel tidak error saat build
 declare global {
   namespace JSX {
     interface IntrinsicElements {
@@ -30,16 +30,16 @@ export default function Navbar() {
       fontFamily: 'Plus Jakarta Sans, sans-serif'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-        {/* LOGO DENGAN EMOJI TIKET */}
+        {/* LOGO DENGAN EMOJI TIKET TETAP ADA */}
         <Link href="/" style={{ textDecoration: 'none', color: '#0F0A1E', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ 
-            width: '36px', 
-            height: '36px', 
-            background: 'linear-gradient(135deg, #7C3AED, #EC4899)', 
-            borderRadius: '10px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
+          <div style={{
+            width: '36px',
+            height: '36px',
+            background: 'linear-gradient(135deg, #7C3AED, #EC4899)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             fontSize: '18px',
             boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)'
           }}>
@@ -50,16 +50,15 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* MENU NAVIGASI */}
+        {/* MENU NAVIGASI - EMOJI SUDAH DIHAPUS */}
         <div style={{ display: 'flex', gap: '24px' }}>
-          <Link href="/market" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Explore 🔍</Link>
-          <Link href="/create-event" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Create ✨</Link>
-          <Link href="/verify" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Verify ✅</Link>
-          <Link href="/dashboard" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Dashboard 👤</Link>
+          <Link href="/market" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Explore</Link>
+          <Link href="/create-event" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Create Event</Link>
+          <Link href="/verify" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Verify</Link>
+          <Link href="/dashboard" style={{ textDecoration: 'none', color: '#4B4869', fontWeight: 600, fontSize: '14px' }}>Dashboard</Link>
         </div>
       </div>
 
-      {/* TOMBOL WALLET */}
       <w3m-button />
     </nav>
   )

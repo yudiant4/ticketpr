@@ -25,15 +25,15 @@ export default function TicketDetailPage({ params }: { params: { id: string } })
           <div style={{ background: 'white', padding: '40px', borderRadius: '32px', border: '1px solid #E8E4F5' }}>
             <div style={{ color: '#7C3AED', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', marginBottom: '10px' }}>Verified Event ✅</div>
             <h1 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '20px' }}>Premium Ticket #{params.id} 💎</h1>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '30px', color: '#4B4869' }}>
-               <span>📅 Date: <b>28 Mar 2026</b></span>
-               <span>📍 Location: <b>Jakarta, Indonesia</b></span>
+              <span>📅 Date: <b>28 Mar 2026</b></span>
+              <span>📍 Location: <b>Jakarta, Indonesia</b></span>
             </div>
 
             <div style={{ background: '#F3F0FF', padding: '24px', borderRadius: '20px', marginBottom: '32px' }}>
-               <div style={{ fontSize: '13px', color: '#7C3AED', fontWeight: 700 }}>Mint Price</div>
-               <div style={{ fontSize: '28px', fontWeight: 800 }}>0.05 ETH 💎</div>
+              <div style={{ fontSize: '13px', color: '#7C3AED', fontWeight: 700 }}>Mint Price</div>
+              <div style={{ fontSize: '28px', fontWeight: 800 }}>0.05 ETH 💎</div>
             </div>
 
             <button style={{ width: '100%', padding: '18px', background: '#0F0A1E', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 700, fontSize: '16px', cursor: 'pointer' }}>
