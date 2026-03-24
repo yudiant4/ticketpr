@@ -216,8 +216,9 @@ export default function BrowsePage() {
                                             <div className="event-price-val">{ev.price} ETH</div>
                                             <div style={{ fontSize: '11px', color: '#9896B0' }}>≈ ${ev.usd}</div>
                                         </div>
-                                        {/* Menggunakan Link sebagai ganti fungsi Minting untuk sementara */}
-                                        <button className="btn-mint">Mint Ticket</button>
+                                        <Link href={`/events/${ev.id}`}>
+                                            <button className="btn-mint">Mint Ticket</button>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
