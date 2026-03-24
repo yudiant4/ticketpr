@@ -47,23 +47,33 @@ export function useTicket(tokenId: bigint) {
 }
 
 // 2. Hook Mint yang disesuaikan agar cocok dengan halaman Market
+// Cari bagian useMintTicket dan ganti dengan ini:
 export function useMintTicket() {
   const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  const mintTicket = async (eventId: bigint, priceInWei: bigint) => {
-    // Kita pakai tier "General" dan URI kosong dulu untuk tes apakah transaksi jalan
+  // Kita pakai nama 'mintTicket' agar sama dengan pemanggilan di halaman
+  const mintTicket = async (eventId: bigint, price: any) => {
+    console.log("Memulai Mint untuk Event ID:", eventId.toString());
+
+    // PENGAMAN: Cek apakah harga perlu diubah ke Wei atau sudah dalam bentuk BigInt
+    const priceInWei = typeof price === 'bigint' ? price : parseEther(price.toString());
+
     return await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'mintTicket',
-      args: [eventId, "General", ""], // Pastikan jumlah argumen [ID, Tier, URI] sesuai kontrakmu
+      // Pastikan argumen ini [ID, Tier, URI] sama dengan di file .sol kamu!
+      args: [eventId, "General", ""],
       value: priceInWei,
       chainId: sepolia.id,
     })
   }
 
   return { mintTicket, hash, isPending, isConfirming, isSuccess, error }
+}
+
+  return { mint, hash, isPending, isConfirming, isSuccess, error }
 }
 
 export function useUseTicket() {
