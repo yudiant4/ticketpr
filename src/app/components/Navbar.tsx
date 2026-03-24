@@ -1,14 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import React from 'react'
 
-// Deklarasi tipe langsung di dalam file agar Vercel pasti membacanya
+// Menggunakan 'any' agar tidak bentrok dengan definisi internal library AppKit
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'w3m-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-      'w3m-network-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      'w3m-button': any;
+      'w3m-network-button': any;
     }
   }
 }
