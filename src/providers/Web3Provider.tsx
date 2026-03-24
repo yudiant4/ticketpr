@@ -8,7 +8,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
 
-// Gunakan Project ID kamu dari cloud.walletconnect.com
 const projectId = 'fe81eb1b17daf3244e518dd16ffe89bc' 
 
 const metadata = {
@@ -20,23 +19,23 @@ const metadata = {
 
 const chains = [sepolia] as const
 
-// PERBAIKAN: Hapus enableEmail dan enableSocials dari sini
+// STRUKTUR YANG BENAR UNTUK WEB3MODAL v5.1.x
 const config = defaultWagmiConfig({
   chains,
   projectId,
   metadata,
+  auth: {
+    email: true,
+    socials: ['google', 'x', 'discord', 'apple'],
+    showWallets: true,
+    walletFeatures: true
+  }
 })
 
 createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true,
-  // Hapus enableOnramp yang ada di sini (di luar)
-  features: {
-    email: true,
-    socials: ['google', 'x', 'discord', 'apple'],
-    onramp: true // Cukup aktifkan di dalam sini
-  },
   themeVariables: {
     '--w3m-accent': '#7C3AED',
     '--w3m-border-radius-master': '2px',

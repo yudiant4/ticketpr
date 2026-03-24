@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useCreateEvent } from '@/hooks/useTicketPro'
@@ -79,7 +78,7 @@ export default function CreateEventPage() {
       <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px', padding: '20px', textAlign: 'center' }}>
         <div style={{ fontSize: '64px' }}>🔐</div>
         <div style={{ fontSize: '20px', fontWeight: 800 }}>Connect Wallet to Create Event</div>
-        <ConnectButton />
+        <w3m-button />
       </div>
     )
   }

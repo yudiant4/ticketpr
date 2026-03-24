@@ -41,7 +41,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      <ConnectButton />
+      <w3m-button />
     </nav>
   )
 }
