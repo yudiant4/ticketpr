@@ -1,145 +1,223 @@
 'use client'
 
-// PERBAIKAN: Menambahkan force-dynamic agar build Vercel lancar
+// Wajib agar build Vercel lancar
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react'
-import { useReadContract } from 'wagmi'
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
+import { useAccount } from 'wagmi'
+import { useCreateEvent } from '@/hooks/useTicketPro'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
-export default function VerifyPage() {
-    const [tokenId, setTokenId] = useState('')
-    const [searchId, setSearchId] = useState<bigint | null>(null)
+export default function CreateEventPage() {
+    const { isConnected } = useAccount()
+    const { createEvent, isPending, isConfirming, isSuccess } = useCreateEvent()
     const [isMobile, setIsMobile] = useState(false)
+    const [step, setStep] = useState(1)
 
-    // --- DETEKSI LAYAR HP ---
+    // Form State Lengkap
+    const [form, setForm] = useState({
+        name: '',
+        date: '',
+        venue: '',
+        city: '',
+        category: 'Music 🎵',
+        description: '', // Deskripsi kembali hadir
+        price: '',
+        maxSupply: '',
+        royalty: '500', // 5%
+    })
+    
+    const [file, setFile] = useState<File | null>(null)
+    const [uploading, setUploading] = useState(false)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+
+    const categories = ['Music 🎵', 'Art 🎨', 'Tech 💻', 'Sports 🏟️', 'Theater 🎭', 'Web3 🌐', 'Gaming 🎮']
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
-        handleResize()
-        window.addEventListener('resize', handleResize)
+        handleResize(); window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    // 1. Cek Pemilik Tiket (Owner) dari Smart Contract
-    const { data: owner, isError: ownerError } = useReadContract({
-        address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
-        functionName: 'ownerOf',
-        args: searchId !== null ? [searchId] : undefined,
+    const validate = (currentStep: number) => {
+        const newErrors: Record<string, string> = {}
+        if (currentStep === 1) {
+            if (!form.name) newErrors.name = 'Required';
+            if (!form.date) newErrors.date = 'Required';
+            if (!form.city) newErrors.city = 'Required';
+            if (!form.description) newErrors.description = 'Required'; // Validasi deskripsi
+        } else if (currentStep === 2) {
+            if (!form.price || parseFloat(form.price) <= 0) newErrors.price = 'Invalid';
+            if (!form.maxSupply || parseInt(form.maxSupply) <= 0) newErrors.maxSupply = 'Invalid';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }
+
+    const handleSubmit = async () => {
+        if (!validate(2)) return;
+        if (!file) { alert("Please upload a poster image 🖼️"); return; }
+        
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const res = await fetch("/api/pinata", { method: "POST", body: formData });
+            const data = await res.json();
+            const metadataURI = `ipfs://${data.ipfsHash}`;
+
+            await createEvent(
+                form.name,
+                form.date,
+                `${form.venue}, ${form.city}`,
+                form.price || '0',
+                BigInt(form.maxSupply || '0'),
+                BigInt(form.royalty || '500'),
+                metadataURI
+            );
+        } catch (err) {
+            alert("Failed to create event. Please check connection 🌐");
+        } finally { setUploading(false); }
+    };
+
+    const inputStyle = (field: string) => ({
+        width: '100%', padding: '14px 16px',
+        border: `2px solid ${errors[field] ? '#EF4444' : '#F3F0FF'}`,
+        borderRadius: '14px', fontSize: '15px', outline: 'none', background: 'white',
+        fontFamily: 'inherit', transition: '0.3s'
     })
 
-    const handleVerify = () => {
-        if (tokenId) {
-            setSearchId(BigInt(tokenId))
-        }
+    if (!isConnected) {
+        return (
+            <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '60px' }}>⚠️</div>
+                <h2 style={{ fontWeight: 800, margin: '20px 0' }}>Connect Wallet to Create Event</h2>
+                <w3m-button />
+            </div>
+        )
     }
 
     return (
-        <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'flex', flexDirection: 'column' }}>
+        <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             <Navbar />
 
-            {/* HEADER */}
-            <div style={{
-                background: 'linear-gradient(135deg, #7C3AED, #4F46E5)',
-                padding: isMobile ? '40px 20px' : '80px 48px',
-                textAlign: 'center',
-                color: 'white',
-                marginTop: '72px'
-            }}>
-                <h1 style={{ fontSize: isMobile ? '28px' : '42px', fontWeight: 800 }}>🛡️ Ticket Verifier</h1>
-                <p style={{ opacity: 0.9, fontSize: '16px' }}>Verify NFT ticket authenticity instantly on-chain ⛓️</p>
+            <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 20px' : '80px 48px', marginTop: '72px' }}>
+                <div style={{ maxWidth: '800px', margin: '0 auto', color: 'white' }}>
+                    <h1 style={{ fontSize: isMobile ? '32px' : '42px', fontWeight: 800 }}>Create New Event ✨</h1>
+                    <p style={{ opacity: 0.9 }}>Fill in the details to launch your NFT ticketing smart contract 🚀</p>
+                </div>
             </div>
 
-            <div style={{ maxWidth: '600px', width: '100%', margin: '-40px auto 80px', padding: '0 20px', flex: 1 }}>
-
-                {/* INPUT BOX */}
-                <div style={{
-                    background: 'white',
-                    padding: isMobile ? '25px' : '40px',
-                    borderRadius: '28px',
-                    boxShadow: '0 20px 50px rgba(124, 58, 237, 0.1)',
-                    border: '1px solid #E8E4F5'
-                }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 700, marginBottom: '12px', color: '#4B4869' }}>Enter Ticket ID 🎫</label>
-                    <div style={{ display: 'flex', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
-                        <input
-                            type="number"
-                            placeholder="e.g. 1"
-                            value={tokenId}
-                            onChange={(e) => setTokenId(e.target.value)}
-                            style={{
-                                flex: 1,
-                                padding: '16px',
-                                borderRadius: '14px',
-                                border: '2px solid #F3F0FF',
-                                outline: 'none',
-                                fontSize: '16px',
-                                background: '#FAFAFF',
-                                fontFamily: 'inherit'
-                            }}
-                        />
-                        <button
-                            onClick={handleVerify}
-                            style={{
-                                padding: '16px 32px',
-                                background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '14px',
-                                fontWeight: 800,
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                                boxShadow: '0 8px 20px rgba(124, 58, 237, 0.3)'
-                            }}
-                        >
-                            Verify Now 🔍
-                        </button>
-                    </div>
+            <div style={{ maxWidth: '850px', margin: '-40px auto 100px', padding: '0 20px' }}>
+                
+                {/* Stepper */}
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
+                  {[1, 2, 3].map(s => (
+                    <div key={s} style={{ flex: 1, height: '6px', background: step >= s ? '#7C3AED' : '#E8E4F5', borderRadius: '10px' }}></div>
+                  ))}
                 </div>
 
-                {/* VERIFICATION RESULT */}
-                {searchId !== null && (
-                    <div style={{ marginTop: '40px', textAlign: 'center' }}>
-                        {owner && !ownerError ? (
-                            <div style={{
-                                background: '#ECFDF5',
-                                border: '2px solid #10B981',
-                                padding: '32px',
-                                borderRadius: '28px'
-                            }}>
-                                <div style={{ fontSize: '56px', marginBottom: '15px' }}>✅</div>
-                                <h2 style={{ color: '#065F46', fontWeight: 800, fontSize: '24px', marginBottom: '10px' }}>VALID TICKET</h2>
-                                <p style={{ color: '#065F46', opacity: 0.8, marginBottom: '25px' }}>This ticket is verified and authentic ✨</p>
+                <div style={{ background: 'white', padding: isMobile ? '24px' : '40px', borderRadius: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.05)', border: '1px solid #E8E4F5' }}>
+                    
+                    {/* STEP 1: INFO */}
+                    {step === 1 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <h2 style={{ fontWeight: 800 }}>Event Information 📝</h2>
+                            
+                            <div>
+                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Event Name</label>
+                                <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={inputStyle('name')} placeholder="e.g. Electronic Horizon Festival" />
+                            </div>
 
-                                <div style={{ textAlign: 'left', background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                                    <div style={{ marginBottom: '12px' }}>
-                                        <div style={{ fontSize: '12px', color: '#9896B0', fontWeight: 700, textTransform: 'uppercase' }}>Owner Address 👤</div>
-                                        <div style={{ fontSize: '13px', fontFamily: 'monospace', wordBreak: 'break-all', color: '#0F0A1E', marginTop: '4px' }}>{owner as string}</div>
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '12px', color: '#9896B0', fontWeight: 700, textTransform: 'uppercase' }}>Ticket Status 🎫</div>
-                                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#10B981', marginTop: '4px' }}>Authentic NFT Verified</div>
-                                    </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Date 📅</label>
+                                    <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} style={inputStyle('date')} />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Category 🏷️</label>
+                                    <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={inputStyle('category')}>
+                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
                                 </div>
                             </div>
-                        ) : ownerError ? (
-                            <div style={{
-                                background: '#FEF2F2',
-                                border: '2px solid #EF4444',
-                                padding: '32px',
-                                borderRadius: '28px'
-                            }}>
-                                <div style={{ fontSize: '56px', marginBottom: '15px' }}>❌</div>
-                                <h2 style={{ color: '#991B1B', fontWeight: 800, fontSize: '24px', marginBottom: '10px' }}>INVALID TICKET</h2>
-                                <p style={{ color: '#991B1B', opacity: 0.8 }}>Ticket ID #{searchId.toString()} was not found on the blockchain 🛡️</p>
+
+                            <div>
+                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Description 📖</label>
+                                <textarea 
+                                    value={form.description} 
+                                    onChange={e => setForm({...form, description: e.target.value})} 
+                                    style={{ ...inputStyle('description'), height: '120px', resize: 'none' }} 
+                                    placeholder="Tell people about your event..."
+                                />
                             </div>
-                        ) : (
-                            <div style={{ color: '#9896B0', padding: '20px' }}>Searching on blockchain... ⛓️</div>
-                        )}
-                    </div>
-                )}
+
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>City 📍</label>
+                                    <input value={form.city} onChange={e => setForm({...form, city: e.target.value})} style={inputStyle('city')} placeholder="Jakarta" />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Venue 🏟️</label>
+                                    <input value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} style={inputStyle('venue')} placeholder="JIEXPO Hall A" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Poster Image 🖼️</label>
+                                <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} style={inputStyle('file')} />
+                            </div>
+
+                            <button onClick={() => validate(1) && setStep(2)} style={{ padding: '16px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', fontSize: '16px' }}>Next: Ticket Configuration ➡️</button>
+                        </div>
+                    )}
+
+                    {/* STEP 2: CONFIG */}
+                    {step === 2 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <h2 style={{ fontWeight: 800 }}>Ticket Configuration ⚙️</h2>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Price (ETH) 💎</label>
+                                    <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} style={inputStyle('price')} placeholder="0.05" />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Total Supply 🎫</label>
+                                    <input type="number" value={form.maxSupply} onChange={e => setForm({...form, maxSupply: e.target.value})} style={inputStyle('maxSupply')} placeholder="500" />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', borderRadius: '14px', border: '2px solid #F3F0FF', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Back</button>
+                                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '16px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}>Review Summary ➡️</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 3: REVIEW */}
+                    {step === 3 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <h2 style={{ fontWeight: 800 }}>Review &amp; Deploy ✅</h2>
+                            <div style={{ background: '#FAFAFF', padding: '24px', borderRadius: '18px', border: '1px solid #F3F0FF' }}>
+                                <p style={{ marginBottom: '10px' }}>🏁 <b>Event:</b> {form.name}</p>
+                                <p style={{ marginBottom: '10px' }}>📅 <b>Date:</b> {form.date}</p>
+                                <p style={{ marginBottom: '10px' }}>📖 <b>Description:</b> {form.description}</p>
+                                <p style={{ marginBottom: '10px' }}>💎 <b>Price:</b> {form.price} ETH</p>
+                                <p>🎫 <b>Supply:</b> {form.maxSupply} Tickets</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button onClick={() => setStep(2)} style={{ flex: 1, padding: '16px', borderRadius: '14px', border: '2px solid #F3F0FF', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Back</button>
+                                <button 
+                                    onClick={handleSubmit} 
+                                    disabled={uploading || isPending}
+                                    style={{ flex: 2, padding: '16px', background: '#0F0A1E', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}
+                                >
+                                    {uploading ? 'Uploading to IPFS... ☁️' : isPending ? 'Check Wallet... 🔑' : 'Deploy Smart Contract 🚀'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <Footer />
