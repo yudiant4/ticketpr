@@ -51,13 +51,14 @@ export function useMintTicket() {
   const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  const mintTicket = async (eventId: bigint, options: { value: bigint }) => {
+  const mintTicket = async (eventId: bigint, priceInWei: bigint) => {
+    // Kita pakai tier "General" dan URI kosong dulu untuk tes apakah transaksi jalan
     return await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'mintTicket',
-      args: [eventId, "General"], // Tier default
-      value: options.value,
+      args: [eventId, "General", ""], // Pastikan jumlah argumen [ID, Tier, URI] sesuai kontrakmu
+      value: priceInWei,
       chainId: sepolia.id,
     })
   }
