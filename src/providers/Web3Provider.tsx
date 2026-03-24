@@ -27,15 +27,16 @@ const config = defaultWagmiConfig({
   metadata,
 })
 
-// PERBAIKAN: Pindahkan konfigurasinya ke sini
 createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true,
-  enableOnramp: true,
-  enableEmail: true,    // Pindah ke sini
-  enableSocials: true,   // Pindah ke sini
-  socials: ['google', 'x', 'discord', 'apple'],
+  // Hapus enableOnramp yang ada di sini (di luar)
+  features: {
+    email: true,
+    socials: ['google', 'x', 'discord', 'apple'],
+    onramp: true // Cukup aktifkan di dalam sini
+  },
   themeVariables: {
     '--w3m-accent': '#7C3AED',
     '--w3m-border-radius-master': '2px',
