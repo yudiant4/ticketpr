@@ -2,6 +2,17 @@
 
 import Link from 'next/link'
 
+// --- TAMBAHAN: Deklarasi Global agar Vercel mengenali tag w3m-button ---
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'w3m-button': any;
+      'w3m-network-button': any;
+    }
+  }
+}
+// -----------------------------------------------------------------------
+
 export default function Navbar() {
   return (
     <nav style={{
