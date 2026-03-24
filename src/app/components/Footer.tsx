@@ -38,7 +38,7 @@ export default function Footer() {
                         <div style={{ fontWeight: 800, fontSize: '26px' }}>Ticket<span style={{ color: '#7C3AED' }}>Pro</span></div>
                     </div>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: '1.6', marginBottom: '24px' }}>
-                        Platform Web3 Ticketing masa depan. Beli, jual, dan verifikasi tiket event sebagai NFT otentik di jaringan blockchain.
+                        The future of Web3 Ticketing. Buy, sell, and verify event tickets as authentic NFTs on the blockchain network.
                     </p>
 
                     {/* Ikon Sosial Media (SVGs) */}

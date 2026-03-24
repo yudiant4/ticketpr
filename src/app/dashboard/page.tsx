@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useAccount, useReadContract, useBalance } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function DashboardLayout() {
     const { address, isConnected } = useAccount()
@@ -130,7 +131,7 @@ export default function DashboardLayout() {
                             )}
                         </div>
 
-                        {/* QUICK ACTIONS (Tadi yang mungkin tidak kelihatan) */}
+                        {/* QUICK ACTIONS */}
                         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '15px' }}>
                             <Link href="/market" style={{ background: 'white', border: '1px solid #E8E4F5', padding: '20px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center' }}>
                                 <div style={{ fontSize: '24px' }}>🛒</div>
@@ -144,10 +145,37 @@ export default function DashboardLayout() {
                                 <div style={{ fontSize: '24px' }}>🛡️</div>
                                 <div style={{ fontWeight: 700, fontSize: '13px', color: '#0F0A1E', marginTop: '10px' }}>Verify</div>
                             </Link>
-                            <Link href="/dashboard" style={{ background: 'white', border: '1px solid #E8E4F5', padding: '20px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center' }}>
+                            <button onClick={() => setActiveTab('profile')} style={{ background: 'white', border: '1px solid #E8E4F5', padding: '20px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center', cursor: 'pointer', fontFamily: 'inherit' }}>
                                 <div style={{ fontSize: '24px' }}>👤</div>
                                 <div style={{ fontWeight: 700, fontSize: '13px', color: '#0F0A1E', marginTop: '10px' }}>Profile</div>
-                            </Link>
+                            </button>
+                        </div>
+
+                        {/* ================= BAGIAN TIKET SAYA (UPCOMING TICKETS) ================= */}
+                        <div style={{ marginTop: '40px' }}>
+                            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                🎫 My Upcoming Tickets
+                            </h2>
+                            {myTickets && (myTickets as any).length > 0 ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '20px' }}>
+                                    {(myTickets as any).map((ticket: any, i: number) => (
+                                        <div key={i} style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #E8E4F5', textAlign: 'center' }}>
+                                            <div style={{ background: 'white', padding: '15px', borderRadius: '15px', display: 'inline-block', marginBottom: '15px', border: '1px solid #F3F0FF' }}>
+                                                {/* QR CODE BERDASARKAN ID TIKET */}
+                                                <QRCodeSVG value={ticket.toString()} size={140} />
+                                            </div>
+                                            <div style={{ fontWeight: 800, fontSize: '16px', color: '#0F0A1E' }}>Ticket #{ticket.toString()}</div>
+                                            <div style={{ fontSize: '12px', color: '#7C3AED', marginTop: '4px', fontWeight: 600 }}>Authentic NFT Ticket</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{ background: 'white', padding: '40px', borderRadius: '20px', border: '1px solid #E8E4F5', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>📭</div>
+                                    <p style={{ color: '#9896B0' }}>You don't have any tickets yet.</p>
+                                    <Link href="/market" style={{ color: '#7C3AED', fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: '10px' }}>Browse Marketplace →</Link>
+                                </div>
+                            )}
                         </div>
                     </>
                 )}
