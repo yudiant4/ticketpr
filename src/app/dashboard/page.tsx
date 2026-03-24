@@ -1,10 +1,12 @@
 'use client'
 
+// PERBAIKAN: Tambahkan ini agar tidak error saat build Vercel
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAccount, useReadContract, useBalance } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { QRCodeSVG } from 'qrcode.react'
 
 const TicketCard = ({ ticketId }: { ticketId: string }) => {
@@ -75,9 +77,10 @@ export default function DashboardLayout() {
 
     if (!isConnected) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 <h2 style={{ fontWeight: 800, color: '#0F0A1E', marginBottom: '20px' }}>Please connect your wallet</h2>
-                <ConnectButton />
+                {/* PERBAIKAN: Ganti ConnectButton menjadi w3m-button */}
+                <w3m-button />
                 <Link href="/" style={{ marginTop: '20px', color: '#7C3AED', fontWeight: 600, textDecoration: 'none' }}>Back to Home</Link>
             </div>
         )
@@ -139,7 +142,8 @@ export default function DashboardLayout() {
                             </h1>
                         </div>
                     </div>
-                    <ConnectButton showBalance={!isMobile} />
+                    {/* PERBAIKAN: Ganti ConnectButton menjadi w3m-button */}
+                    <w3m-button />
                 </header>
 
                 {activeTab === 'upcoming' && (

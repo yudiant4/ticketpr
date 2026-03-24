@@ -4,16 +4,14 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useCreateEvent } from '@/hooks/useTicketPro'
-import Navbar from '../components/Navbar' // Pakai Navbar terpusat
+import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-
 
 export default function CreateEventPage() {
   const { isConnected } = useAccount()
   const { createEvent, isPending, isConfirming, isSuccess, hash } = useCreateEvent()
   const [isMobile, setIsMobile] = useState(false)
 
-  // --- LOGIC DETEKSI HP ---
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     handleResize()
@@ -30,7 +28,7 @@ export default function CreateEventPage() {
   const [step, setStep] = useState(1)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const categories = ['🎵 Music', '🎨 Art', '💻 Tech', '🏟️ Sports', '🎭 Theater', '🚀 Web3', '🕹️ Gaming']
+  const categories = ['Music', 'Art', 'Tech', 'Sports', 'Theater', 'Web3', 'Gaming']
 
   const validate = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
@@ -49,7 +47,7 @@ export default function CreateEventPage() {
 
   const handleSubmit = async () => {
     if (!validate(2)) return;
-    if (!file) { alert("Upload poster!"); return; }
+    if (!file) { alert("Please upload a poster image."); return; }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -58,12 +56,18 @@ export default function CreateEventPage() {
       const data = await res.json();
       const metadataURI = `ipfs://${data.ipfsHash}`;
 
+      // PERBAIKAN: Tambahkan fallback '0' agar BigInt tidak crash jika input kosong
       await createEvent(
-        form.name, form.date, `${form.venue}, ${form.city}`,
-        form.price, BigInt(form.maxSupply), BigInt(form.royalty), metadataURI
+        form.name,
+        form.date,
+        `${form.venue}, ${form.city}`,
+        form.price || '0',
+        BigInt(form.maxSupply || '0'),
+        BigInt(form.royalty || '500'),
+        metadataURI
       );
     } catch (err) {
-      alert("Failed to create event.");
+      alert("Failed to create event. Please check your connection.");
     } finally { setUploading(false); }
   };
 
@@ -71,12 +75,13 @@ export default function CreateEventPage() {
     width: '100%', padding: '12px 16px',
     border: `1.5px solid ${errors[field] ? '#DC2626' : '#E8E4F5'}`,
     borderRadius: '12px', fontSize: '14px', outline: 'none', background: 'white',
+    fontFamily: 'inherit'
   })
 
   if (!isConnected) {
     return (
-      <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px', padding: '20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '64px' }}>🔐</div>
+      <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px', padding: '20px', textAlign: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <div style={{ width: '60px', height: '60px', background: '#F3F0FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED', fontSize: '24px', fontWeight: 'bold' }}>!</div>
         <div style={{ fontSize: '20px', fontWeight: 800 }}>Connect Wallet to Create Event</div>
         <w3m-button />
       </div>
@@ -87,15 +92,13 @@ export default function CreateEventPage() {
     <main style={{ background: '#FAFAFF', minHeight: '100vh', color: '#0F0A1E', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       <Navbar />
 
-      {/* HEADER */}
       <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 20px' : '60px 48px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, color: 'white' }}>➕ Create Event</h1>
+          <h1 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, color: 'white' }}>Create New Event</h1>
           <p style={{ color: 'rgba(255,255,255,0.8)' }}>Sell your NFT tickets on the blockchain</p>
         </div>
       </div>
 
-      {/* PROGRESS BAR (Responsive) */}
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '20px 16px' : '32px 48px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
           {['Info', 'Config', 'Review'].map((s, i) => (
@@ -109,18 +112,16 @@ export default function CreateEventPage() {
           ))}
         </div>
 
-        {/* FORM CONTAINER */}
         <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '24px', padding: isMobile ? '24px 20px' : '40px' }}>
 
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>📋 Event Info</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Event Information</h2>
               <div>
                 <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Event Name</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={inputStyle('name')} placeholder="Music Fest" />
               </div>
 
-              {/* Responsive Grid: 2 Col di Laptop, 1 Col di HP */}
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Date</label>
@@ -138,14 +139,14 @@ export default function CreateEventPage() {
               </div>
 
               <button onClick={() => validate(1) && setStep(2)} style={{ width: '100%', padding: '16px', background: '#7C3AED', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 700, marginTop: '20px', cursor: 'pointer' }}>
-                Next: Ticket Config →
+                Next: Ticket Config
               </button>
             </div>
           )}
 
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>🎫 Ticket Config</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Ticket Config</h2>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Price (ETH)</label>
@@ -157,38 +158,35 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              <div style={{ background: '#F3F0FF', padding: '20px', borderRadius: '16px' }}>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: '#7C3AED', marginBottom: '10px' }}>PREVIEW</p>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px', fontSize: '14px' }}>
-                  <div><b>Name:</b> {form.name}</div>
-                  <div><b>Price:</b> {form.price} ETH</div>
-                </div>
-              </div>
-
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none' }}>Back</button>
-                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700 }}>Next Step</button>
+                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', cursor: 'pointer' }}>Back</button>
+                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Next Step</button>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>🚀 Review</h2>
-              <div style={{ background: '#FAFAFF', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Review</h2>
+              <div style={{ background: '#FAFAFF', padding: '20px', borderRadius: '16px', border: '1px solid #E8E4F5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Event:</span> <b>{form.name}</b></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Price:</span> <b>{form.price} ETH</b></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Supply:</span> <b>{form.maxSupply}</b></div>
               </div>
 
-              <button onClick={handleSubmit} disabled={uploading || isPending} style={{ width: '100%', padding: '16px', background: '#7C3AED', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
-                {uploading ? 'Uploading...' : isPending ? 'Waiting MetaMask...' : 'Deploy to Blockchain'}
+              <button
+                onClick={handleSubmit}
+                disabled={uploading || isPending}
+                style={{ width: '100%', padding: '16px', background: '#0F0A1E', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+              >
+                {uploading ? 'Uploading...' : isPending ? 'Confirm in Wallet...' : 'Deploy to Blockchain'}
               </button>
             </div>
           )}
 
         </div>
       </div>
+      <Footer />
     </main>
   )
 }
