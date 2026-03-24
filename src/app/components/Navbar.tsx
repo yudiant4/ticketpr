@@ -3,6 +3,23 @@
 import Link from 'next/link'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'w3m-button': any;
+    }
+  }
+}
+
+export default function Navbar() {
+  return (
+    <nav>
+      {/* ... kode navbar kamu ... */}
+      <w3m-button />
+    </nav>
+  )
+}
+
 export default function Navbar() {
   return (
     <nav style={{

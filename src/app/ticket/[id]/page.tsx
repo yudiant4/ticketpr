@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useMintTicket } from '@/hooks/useTicketPro'
