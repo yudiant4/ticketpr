@@ -5,33 +5,29 @@ import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 
-// --- DATA DUMMY EVENT ---
 const mockEvents = [
-  { id: 1, name: "Electronic Horizon Festival", date: "28 Mar 2026", city: "Jakarta", price: "0.45", chain: "ETH", status: "🔴 Live", statusClass: "status-live", bg: "linear-gradient(135deg, #667EEA, #764BA2)", emoji: "🎵" },
-  { id: 2, name: "Neon City Rave Vol. 3", date: "5 Apr 2026", city: "Bali", price: "0.18", chain: "MATIC", status: "🔥 Hot", statusClass: "status-hot", bg: "linear-gradient(135deg, #F093FB, #F5576C)", emoji: "🎤" },
-  { id: 3, name: "Block Summit 2026", date: "12 Apr 2026", city: "Surabaya", price: "0.05", chain: "BASE", status: "⏳ Soon", statusClass: "status-soon", bg: "linear-gradient(135deg, #4FACFE, #00F2FE)", emoji: "🏟️" },
-  { id: 4, name: "Metamorphosis Art Fair", date: "19 Apr 2026", city: "Bandung", price: "0.30", chain: "ETH", status: "🔴 Live", statusClass: "status-live", bg: "linear-gradient(135deg, #43E97B, #38F9D7)", emoji: "🎨" },
-  { id: 5, name: "Web3 Culture Festival", date: "25 Apr 2026", city: "Yogyakarta", price: "0.22", chain: "MATIC", status: "🔥 Hot", statusClass: "status-hot", bg: "linear-gradient(135deg, #FA709A, #FEE140)", emoji: "🎭" },
-  { id: 6, name: "DeFi Launchpad Night", date: "2 Mei 2026", city: "Jakarta", price: "0.12", chain: "BASE", status: "⏳ Soon", statusClass: "status-soon", bg: "linear-gradient(135deg, #A18CD1, #FBC2EB)", emoji: "🚀" }
+  { id: 1, name: "Electronic Horizon Festival", date: "28 Mar 2026", city: "Jakarta", price: "0.45", chain: "ETH", status: "Live", statusClass: "status-live", bg: "linear-gradient(135deg, #667EEA, #764BA2)", emoji: "" },
+  { id: 2, name: "Neon City Rave Vol. 3", date: "5 Apr 2026", city: "Bali", price: "0.18", chain: "MATIC", status: "Hot", statusClass: "status-hot", bg: "linear-gradient(135deg, #F093FB, #F5576C)", emoji: "" },
+  { id: 3, name: "Block Summit 2026", date: "12 Apr 2026", city: "Surabaya", price: "0.05", chain: "BASE", status: "Soon", statusClass: "status-soon", bg: "linear-gradient(135deg, #4FACFE, #00F2FE)", emoji: "" },
+  { id: 4, name: "Metamorphosis Art Fair", date: "19 Apr 2026", city: "Bandung", price: "0.30", chain: "ETH", status: "Live", statusClass: "status-live", bg: "linear-gradient(135deg, #43E97B, #38F9D7)", emoji: "" },
+  { id: 5, name: "Web3 Culture Festival", date: "25 Apr 2026", city: "Yogyakarta", price: "0.22", chain: "MATIC", status: "Hot", statusClass: "status-hot", bg: "linear-gradient(135deg, #FA709A, #FEE140)", emoji: "" },
+  { id: 6, name: "DeFi Launchpad Night", date: "2 Mei 2026", city: "Jakarta", price: "0.12", chain: "BASE", status: "Soon", statusClass: "status-soon", bg: "linear-gradient(135deg, #A18CD1, #FBC2EB)", emoji: "" }
 ]
 
 export default function LandingPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [search, setSearch] = useState('')
 
-  // LOGIKA PENCARIAN (Filter otomatis)
   const filteredEvents = mockEvents.filter((ev) =>
     ev.name.toLowerCase().includes(search.toLowerCase()) ||
     ev.city.toLowerCase().includes(search.toLowerCase())
   )
 
   useEffect(() => {
-    // Deteksi Layar HP
     const handleResize = () => setIsMobile(window.innerWidth < 900)
     handleResize()
     window.addEventListener('resize', handleResize)
 
-    // Animasi Scroll Reveal
     const reveals = document.querySelectorAll('.reveal')
     const observer = new IntersectionObserver(entries => {
       entries.forEach((entry, i) => {
@@ -51,8 +47,6 @@ export default function LandingPage() {
 
   return (
     <main className="landing-wrapper">
-
-      {/* --- CSS KHUSUS HALAMAN INI --- */}
       <style dangerouslySetInnerHTML={{
         __html: `
         .landing-wrapper {
@@ -95,7 +89,7 @@ export default function LandingPage() {
         .stats-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
         .stat-item { display: flex; align-items: center; gap: 16px; padding: 0 24px; border-right: 1px solid var(--border); }
         .stat-item:last-child { border-right: none; }
-        .stat-icon { width: 48px; height: 48px; background: var(--bg3); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .stat-icon { width: 12px; height: 12px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
         .stat-num { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 3px; }
 
         .section { max-width: 1200px; margin: 0 auto; padding: 80px 48px; }
@@ -114,11 +108,11 @@ export default function LandingPage() {
         .how-section { background: var(--bg2); padding: 80px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 50px; }
         .step-item { text-align: center; }
-        .step-num { width: 72px; height: 72px; margin: 0 auto 24px; background: linear-gradient(135deg, var(--purple), var(--purple-light)); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 8px 24px rgba(124,58,237,0.35); color: white;}
+        .step-num { width: 48px; height: 48px; margin: 0 auto 24px; background: linear-gradient(135deg, var(--purple), var(--purple-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; box-shadow: 0 8px 24px rgba(124,58,237,0.35); color: white;}
         .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 50px; }
         .feature-card { background: white; border: 1.5px solid var(--border); border-radius: 20px; padding: 32px; display: flex; gap: 20px; transition: 0.3s; }
         .feature-card:hover { border-color: var(--purple); box-shadow: 0 8px 32px var(--shadow); transform: translateY(-3px); }
-        .feature-icon-wrap { width: 56px; height: 56px; flex-shrink: 0; background: var(--bg3); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+        .feature-icon-wrap { width: 12px; height: 12px; margin-top: 6px; flex-shrink: 0; background: var(--purple); border-radius: 50%; }
 
         .cta-section { padding: 0 48px 80px; }
         .cta-inner { max-width: 1200px; margin: 0 auto; background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%); border-radius: 28px; padding: 64px 72px; display: flex; align-items: center; justify-content: space-between; gap: 40px; position: relative; overflow: hidden; }
@@ -141,10 +135,8 @@ export default function LandingPage() {
         }
       `}} />
 
-      {/* --- NAVBAR --- */}
       <Navbar />
 
-      {/* --- HERO SECTION --- */}
       <section className="hero">
         <div className="hero-gradient"></div>
         <div className="hero-dots"></div>
@@ -157,8 +149,8 @@ export default function LandingPage() {
             <h1 className="hero-title">Discover &amp; Own<br />Your Event<br />Tickets as NFTs</h1>
             <p className="hero-sub">Buy, sell, and collect verified event tickets on the blockchain. Zero fraud, full ownership, instant secondary market — all in one place.</p>
             <div className="hero-ctas">
-              <Link href="#explore" className="btn-primary">🎫 Explore Tickets</Link>
-              <Link href="/create-event" className="btn-secondary">✨ Create Event</Link>
+              <Link href="#explore" className="btn-primary">Explore Tickets</Link>
+              <Link href="/create-event" className="btn-secondary">Create Event</Link>
             </div>
           </div>
           <div className="hero-right">
@@ -166,41 +158,35 @@ export default function LandingPage() {
               <div className="illus-circle circle-1"></div>
               <div className="illus-circle circle-2"></div>
               <div className="hero-illus-card card-1">
-                <div style={{ fontSize: '22px' }}>🔐</div>
-                <div><div>Verified NFT</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>On-chain proof</div></div>
+                <div><div style={{ fontWeight: 800 }}>Verified NFT</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>On-chain proof</div></div>
               </div>
               <div className="hero-illus-card card-2">
-                <div style={{ fontSize: '22px' }}>⚡</div>
-                <div><div>Instant Mint</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>Gas optimized</div></div>
+                <div><div style={{ fontWeight: 800 }}>Instant Mint</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>Gas optimized</div></div>
               </div>
               <div className="hero-illus-card card-3">
-                <div style={{ fontSize: '22px' }}>💸</div>
-                <div><div>0.05 ETH</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>Floor price</div></div>
+                <div><div style={{ fontWeight: 800 }}>0.05 ETH</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>Floor price</div></div>
               </div>
               <div className="hero-illus-card card-4">
-                <div style={{ fontSize: '22px' }}>🛡️</div>
-                <div><div>Anti-Fraud</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>100% secure</div></div>
+                <div><div style={{ fontWeight: 800 }}>Anti-Fraud</div><div style={{ fontSize: '11px', color: '#9896B0', fontWeight: 400 }}>100% secure</div></div>
               </div>
               <div className="hero-illus-main">
-                <div style={{ fontSize: '64px', marginBottom: '10px' }}>🎟️</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#7C3AED', letterSpacing: '0.05em' }}>NFT TICKET</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F0A1E', letterSpacing: '0.05em' }}>TICKETPRO</div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#7C3AED', marginTop: '4px' }}>VERIFIED</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- STATS BAR --- */}
       <div className="stats-bar reveal">
         <div className="stats-inner">
-          <div className="stat-item"><div className="stat-icon">🎪</div><div><div className="stat-num">2,400+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>Live Events</div></div></div>
-          <div className="stat-item"><div className="stat-icon">🎫</div><div><div className="stat-num">128K+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>NFTs Minted</div></div></div>
-          <div className="stat-item"><div className="stat-icon">👥</div><div><div className="stat-num">45K+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>Active Users</div></div></div>
-          <div className="stat-item"><div className="stat-icon">💎</div><div><div className="stat-num">$4.2M+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>Trading Volume</div></div></div>
+          <div className="stat-item"><div className="stat-icon"></div><div><div className="stat-num">2,400+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>Live Events</div></div></div>
+          <div className="stat-item"><div className="stat-icon"></div><div><div className="stat-num">128K+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>NFTs Minted</div></div></div>
+          <div className="stat-item"><div className="stat-icon"></div><div><div className="stat-num">45K+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>Active Users</div></div></div>
+          <div className="stat-item"><div className="stat-icon"></div><div><div className="stat-num">$4.2M+</div><div style={{ fontSize: '13px', color: '#9896B0' }}>Trading Volume</div></div></div>
         </div>
       </div>
 
-      {/* --- EVENTS SECTION + SEARCH --- */}
       <div className="section reveal" id="explore">
         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '20px' }}>
           <div>
@@ -208,13 +194,11 @@ export default function LandingPage() {
             <h2 className="section-title">Explore Trending Events</h2>
             <p style={{ fontSize: '14px', color: '#9896B0', marginTop: '6px' }}>Most popular NFT tickets in the marketplace</p>
           </div>
-
-          {/* Kolom Pencarian */}
           <div style={{ display: 'flex', background: '#FAFAFF', border: '1.5px solid #E8E4F5', borderRadius: '50px', padding: '10px 20px', width: isMobile ? '100%' : '350px', alignItems: 'center', gap: '10px' }}>
-            <span>🔍</span>
+            <span style={{ fontSize: '14px', color: '#9896B0', fontWeight: 600 }}>Search</span>
             <input
               type="text"
-              placeholder="Search by event name or city..."
+              placeholder="event name or city..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ border: 'none', background: 'none', outline: 'none', width: '100%', fontSize: '14px', fontFamily: 'inherit', color: 'var(--text)' }}
@@ -230,11 +214,10 @@ export default function LandingPage() {
                   <div className="event-visual" style={{ background: ev.bg }}>
                     <span className={`event-status ${ev.statusClass}`}>{ev.status}</span>
                     <span className="event-chain">{ev.chain}</span>
-                    <div style={{ fontSize: '64px', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.2))' }}>{ev.emoji}</div>
                   </div>
                   <div style={{ padding: '20px' }}>
                     <div style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px' }}>{ev.name}</div>
-                    <div style={{ fontSize: '13px', color: '#9896B0', marginBottom: '16px' }}>📅 <span style={{ color: '#4B4869', fontWeight: 500 }}>{ev.date}</span> &nbsp;·&nbsp; 📍 <span style={{ color: '#4B4869', fontWeight: 500 }}>{ev.city}</span></div>
+                    <div style={{ fontSize: '13px', color: '#9896B0', marginBottom: '16px' }}>Date: <span style={{ color: '#4B4869', fontWeight: 500 }}>{ev.date}</span> &nbsp;·&nbsp; Location: <span style={{ color: '#4B4869', fontWeight: 500 }}>{ev.city}</span></div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #E8E4F5', paddingTop: '14px' }}>
                       <div>
                         <div style={{ fontSize: '11px', color: '#9896B0' }}>Floor Price</div>
@@ -248,15 +231,13 @@ export default function LandingPage() {
             ))
           ) : (
             <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', background: '#F3F0FF', borderRadius: '24px', border: '1px dashed #E8E4F5' }}>
-              <div style={{ fontSize: '48px', marginBottom: '10px' }}>🔍</div>
               <h3 style={{ fontWeight: 800, color: '#0F0A1E' }}>No events found</h3>
-              <p style={{ color: '#9896B0' }}>We couldn't find any events matching "{search}".</p>
+              <p style={{ color: '#9896B0', marginTop: '10px' }}>We couldn't find any events matching "{search}".</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* --- HOW IT WORKS --- */}
       <div className="how-section">
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 48px' }}>
           <div className="section-header reveal">
@@ -268,26 +249,17 @@ export default function LandingPage() {
           </div>
           <div className="steps-grid reveal">
             <div className="step-item">
-              <div style={{ position: 'relative', width: '72px', height: '72px', margin: '0 auto 24px' }}>
-                <div className="step-num">🔗</div>
-                <div style={{ position: 'absolute', top: '-6px', right: '-6px', width: '22px', height: '22px', background: '#F97316', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: 'white' }}>1</div>
-              </div>
+              <div className="step-num">1</div>
               <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>Connect Your Wallet</div>
               <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Link MetaMask or WalletConnect. Your wallet is your identity — no email or password needed.</p>
             </div>
             <div className="step-item">
-              <div style={{ position: 'relative', width: '72px', height: '72px', margin: '0 auto 24px' }}>
-                <div className="step-num">🎫</div>
-                <div style={{ position: 'absolute', top: '-6px', right: '-6px', width: '22px', height: '22px', background: '#F97316', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: 'white' }}>2</div>
-              </div>
+              <div className="step-num">2</div>
               <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>Browse &amp; Mint Ticket</div>
               <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Find your event, pick your seat tier, and mint your NFT ticket directly to your wallet in seconds.</p>
             </div>
             <div className="step-item">
-              <div style={{ position: 'relative', width: '72px', height: '72px', margin: '0 auto 24px' }}>
-                <div className="step-num">🎉</div>
-                <div style={{ position: 'absolute', top: '-6px', right: '-6px', width: '22px', height: '22px', background: '#F97316', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: 'white' }}>3</div>
-              </div>
+              <div className="step-num">3</div>
               <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>Attend the Event</div>
               <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Show your NFT QR code at the gate. Blockchain verification confirms authenticity instantly.</p>
             </div>
@@ -295,7 +267,6 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* --- FEATURES --- */}
       <div style={{ padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 48px' }}>
           <div className="section-header reveal">
@@ -306,28 +277,28 @@ export default function LandingPage() {
           </div>
           <div className="features-grid reveal">
             <div className="feature-card">
-              <div className="feature-icon-wrap">🔐</div>
+              <div className="feature-icon-wrap"></div>
               <div>
                 <div style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>On-Chain Verification</div>
                 <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Every ticket is a unique NFT. Scan QR to verify authenticity instantly on the blockchain.</p>
               </div>
             </div>
             <div className="feature-card">
-              <div className="feature-icon-wrap">💸</div>
+              <div className="feature-icon-wrap"></div>
               <div>
                 <div style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>Smart Royalty System</div>
                 <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Organizers earn royalties on every secondary sale automatically via smart contracts.</p>
               </div>
             </div>
             <div className="feature-card">
-              <div className="feature-icon-wrap">🛡️</div>
+              <div className="feature-icon-wrap"></div>
               <div>
                 <div style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>Anti-Scalping Controls</div>
                 <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Programmable price caps and transfer restrictions embedded in smart contract logic.</p>
               </div>
             </div>
             <div className="feature-card">
-              <div className="feature-icon-wrap">🎭</div>
+              <div className="feature-icon-wrap"></div>
               <div>
                 <div style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>Collectible Post-Event NFT</div>
                 <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>Tickets transform into collectibles after the event — preserving memories forever on-chain.</p>
@@ -337,7 +308,6 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* --- CTA BANNER --- */}
       <div className="cta-section reveal">
         <div className="cta-inner">
           <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.1) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px', pointerEvents: 'none' }}></div>
@@ -346,15 +316,13 @@ export default function LandingPage() {
             <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.8)', maxWidth: '400px' }}>Join 2,400+ organizers on TicketPro. Deploy your smart ticket contract in under 5 minutes.</p>
           </div>
           <div style={{ display: 'flex', gap: '12px', position: 'relative', zIndex: 1, flexDirection: isMobile ? 'column' : 'row' }}>
-            <Link href="/create-event" style={{ background: 'white', color: '#7C3AED', padding: '14px 28px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>🚀 Create Event</Link>
-            <Link href="/market" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1.5px solid rgba(255,255,255,0.4)', padding: '14px 28px', borderRadius: '50px', fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>Explore Market →</Link>
+            <Link href="/create-event" style={{ background: 'white', color: '#7C3AED', padding: '14px 28px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>Create Event</Link>
+            <Link href="/market" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1.5px solid rgba(255,255,255,0.4)', padding: '14px 28px', borderRadius: '50px', fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>Explore Market</Link>
           </div>
         </div>
       </div>
 
-      {/* --- FOOTER ASLI KITA --- */}
       <Footer />
-
     </main>
   )
 }
