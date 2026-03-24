@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link'
 import { useState } from 'react'
 import Navbar from '../components/Navbar'
@@ -93,6 +95,12 @@ export default function BrowsePage() {
         .event-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
         .event-price-val { font-size: 18px; font-weight: 800; color: var(--purple); }
         .btn-mint { background: linear-gradient(135deg, var(--purple), var(--purple-light)); color: white; border: none; border-radius: 50px; padding: 9px 18px; font-weight: 700; cursor: pointer; }
+
+        @media (max-width: 900px) {
+          .main-layout { grid-template-columns: 1fr; padding: 20px; }
+          .sidebar { display: none; }
+          .events-grid { grid-template-columns: 1fr; }
+        }
       `}} />
 
             <Navbar />
@@ -114,7 +122,7 @@ export default function BrowsePage() {
                 <aside className="sidebar">
                     <div className="sidebar-header">
                         <div className="sidebar-title">🎛️ Filters</div>
-                        <button className="btn-clear">Clear All</button>
+                        <button className="btn-clear" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--purple)', background: 'none', border: 'none', cursor: 'pointer' }}>Clear All</button>
                     </div>
                     <div className="filter-group">
                         <div className="filter-group-title">Category 🏷️</div>

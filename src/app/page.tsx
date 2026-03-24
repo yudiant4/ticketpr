@@ -8,7 +8,7 @@ import { useState } from 'react'
 export default function Home() {
   return (
     <main style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#FFFFFF', color: '#0F0A1E', overflowX: 'hidden' }}>
-      
+
       {/* CSS UNTUK VERSI HP (MOBILE RESPONSIVE) */}
       <style dangerouslySetInnerHTML={{
         __html: `
