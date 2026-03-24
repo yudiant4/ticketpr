@@ -1,6 +1,6 @@
 'use client'
 
-// PERBAIKAN: Tambahkan ini agar tidak error saat build Vercel
+// PERBAIKAN: Wajib untuk aplikasi Web3 di Vercel agar data wallet terbaca dinamis
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link'
@@ -16,6 +16,7 @@ const TicketCard = ({ ticketId }: { ticketId: string }) => {
         <div onClick={() => setIsFlipped(!isFlipped)} style={{ perspective: '1000px', width: '100%', height: '340px', cursor: 'pointer' }}>
             <div style={{ position: 'relative', width: '100%', height: '100%', transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)', transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
 
+                {/* Bagian Depan Tiket */}
                 <div style={{ position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', background: 'linear-gradient(135deg, #7C3AED, #EC4899)', borderRadius: '24px', padding: '30px', color: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 20px 40px rgba(124, 58, 237, 0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
                     <div>
                         <div style={{ display: 'inline-block', fontSize: '11px', fontWeight: 800, letterSpacing: '2px', background: 'rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '50px', backdropFilter: 'blur(10px)', marginBottom: '15px' }}>AUTHENTIC NFT</div>
@@ -26,6 +27,7 @@ const TicketCard = ({ ticketId }: { ticketId: string }) => {
                     </div>
                 </div>
 
+                {/* Bagian Belakang Tiket (QR Code) */}
                 <div style={{ position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', background: 'white', border: '2px solid #E8E4F5', borderRadius: '24px', padding: '30px', color: '#0F0A1E', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: 'rotateY(180deg)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
                     <div style={{ background: 'white', padding: '15px', borderRadius: '20px', border: '2px solid #F3F0FF', boxShadow: '0 10px 30px rgba(124, 58, 237, 0.1)' }}>
                         <QRCodeSVG value={ticketId} size={160} level="H" />
@@ -62,9 +64,12 @@ export default function DashboardLayout() {
     const [autoSign, setAutoSign] = useState(false)
     const [testnetMode, setTestnetMode] = useState(true)
 
-    const { data: balanceData } = useBalance({ address })
+    // Data dari Smart Contract
     const { data: myTickets } = useReadContract({
-        address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getTicketsByOwner', args: address ? [address] : undefined,
+        address: CONTRACT_ADDRESS, 
+        abi: CONTRACT_ABI, 
+        functionName: 'getTicketsByOwner', 
+        args: address ? [address] : undefined,
     })
 
     useEffect(() => {
@@ -79,6 +84,7 @@ export default function DashboardLayout() {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 <h2 style={{ fontWeight: 800, color: '#0F0A1E', marginBottom: '20px' }}>Please connect your wallet</h2>
+                {/* Menggunakan tombol AppKit */}
                 <w3m-button />
                 <Link href="/" style={{ marginTop: '20px', color: '#7C3AED', fontWeight: 600, textDecoration: 'none' }}>Back to Home</Link>
             </div>

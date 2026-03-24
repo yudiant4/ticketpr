@@ -31,14 +31,13 @@ export default function CreateEventPage() {
   const [step, setStep] = useState(1)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const categories = ['Music', 'Art', 'Tech', 'Sports', 'Theater', 'Web3', 'Gaming']
+  const categories = ['Music 🎵', 'Art 🎨', 'Tech 💻', 'Sports 🏟️', 'Theater 🎭', 'Web3 🌐', 'Gaming 🎮']
 
   const validate = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
     if (currentStep === 1) {
       if (!form.name) newErrors.name = 'Required';
       if (!form.date) newErrors.date = 'Required';
-      if (!form.venue) newErrors.venue = 'Required';
       if (!form.city) newErrors.city = 'Required';
     } else if (currentStep === 2) {
       if (!form.price || parseFloat(form.price) <= 0) newErrors.price = 'Invalid';
@@ -50,7 +49,7 @@ export default function CreateEventPage() {
 
   const handleSubmit = async () => {
     if (!validate(2)) return;
-    if (!file) { alert("Please upload a poster image."); return; }
+    if (!file) { alert("Please upload a poster image 🖼️"); return; }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -59,7 +58,6 @@ export default function CreateEventPage() {
       const data = await res.json();
       const metadataURI = `ipfs://${data.ipfsHash}`;
 
-      // PERBAIKAN: Fallback '0' tetap dipertahankan agar aman dari crash
       await createEvent(
         form.name,
         form.date,
@@ -70,7 +68,7 @@ export default function CreateEventPage() {
         metadataURI
       );
     } catch (err) {
-      alert("Failed to create event. Please check your connection.");
+      alert("Failed to create event. Please check your connection 🌐");
     } finally { setUploading(false); }
   };
 
@@ -84,8 +82,9 @@ export default function CreateEventPage() {
   if (!isConnected) {
     return (
       <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px', padding: '20px', textAlign: 'center', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-        <div style={{ width: '60px', height: '60px', background: '#F3F0FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED', fontSize: '24px', fontWeight: 'bold' }}>!</div>
+        <div style={{ fontSize: '60px' }}>⚠️</div>
         <div style={{ fontSize: '20px', fontWeight: 800 }}>Connect Wallet to Create Event</div>
+        <p style={{ color: '#9896B0', maxWidth: '300px' }}>You need an active Web3 wallet to deploy smart contracts ✨</p>
         <w3m-button />
       </div>
     )
@@ -97,14 +96,15 @@ export default function CreateEventPage() {
 
       <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 20px' : '60px 48px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, color: 'white' }}>Create New Event</h1>
-          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Sell your NFT tickets on the blockchain</p>
+          <h1 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, color: 'white' }}>Create New Event ✨</h1>
+          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Launch your NFT tickets on the blockchain in minutes 🚀</p>
         </div>
       </div>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '20px 16px' : '32px 48px' }}>
+        {/* Stepper */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-          {['Info', 'Configuration', 'Review'].map((s, i) => (
+          {['Info 📝', 'Config ⚙️', 'Review ✅'].map((s, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < 2 ? 1 : 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: step >= i + 1 ? '#7C3AED' : 'white', border: '2px solid #7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', color: step >= i + 1 ? 'white' : '#7C3AED', fontWeight: 800, fontSize: '12px' }}>{i + 1}</div>
@@ -115,74 +115,81 @@ export default function CreateEventPage() {
           ))}
         </div>
 
-        <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '24px', padding: isMobile ? '24px 20px' : '40px' }}>
+        <div style={{ background: 'white', border: '1px solid #E8E4F5', borderRadius: '24px', padding: isMobile ? '24px 20px' : '40px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
 
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Event Information</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Event Information 📝</h2>
               <div>
                 <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Event Name</label>
-                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={inputStyle('name')} placeholder="Music Fest" />
+                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={inputStyle('name')} placeholder="e.g. Tomorrowland 2026" />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Date</label>
+                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Date 📅</label>
                   <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} style={inputStyle('date')} />
                 </div>
                 <div>
-                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>City</label>
-                  <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} style={inputStyle('city')} placeholder="Jakarta" />
+                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>City 📍</label>
+                  <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} style={inputStyle('city')} placeholder="e.g. Jakarta" />
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Poster Image</label>
+                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Poster Image 🖼️</label>
                 <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} style={inputStyle('file')} />
               </div>
 
               <button onClick={() => validate(1) && setStep(2)} style={{ width: '100%', padding: '16px', background: '#7C3AED', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 700, marginTop: '20px', cursor: 'pointer' }}>
-                Next: Ticket Configuration
+                Next: Configuration ➡️
               </button>
             </div>
           )}
 
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Ticket Configuration</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Ticket Configuration ⚙️</h2>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Price (ETH)</label>
-                  <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle('price')} />
+                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Price (ETH) 💎</label>
+                  <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle('price')} placeholder="0.05" />
                 </div>
                 <div>
-                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Total Supply</label>
-                  <input type="number" value={form.maxSupply} onChange={e => setForm({ ...form, maxSupply: e.target.value })} style={inputStyle('maxSupply')} />
+                  <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Total Supply 🎫</label>
+                  <input type="number" value={form.maxSupply} onChange={e => setForm({ ...form, maxSupply: e.target.value })} style={inputStyle('maxSupply')} placeholder="500" />
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', cursor: 'pointer' }}>Back</button>
-                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Next Step</button>
+                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #E8E4F5', background: 'none', cursor: 'pointer', fontWeight: 600 }}>Back</button>
+                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#7C3AED', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Next Step ➡️</button>
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Review</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Final Review ✅</h2>
               <div style={{ background: '#FAFAFF', padding: '20px', borderRadius: '16px', border: '1px solid #E8E4F5', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Event:</span> <b>{form.name}</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Price:</span> <b>{form.price} ETH</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Supply:</span> <b>{form.maxSupply}</b></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Event Name:</span> <b>{form.name}</b></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Location:</span> <b>{form.city} 📍</b></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Price:</span> <b>{form.price} ETH 💎</b></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Total Supply:</span> <b>{form.maxSupply} Tickets 🎫</b></div>
               </div>
+
+              {isSuccess && (
+                <div style={{ padding: '15px', background: '#DCFCE7', color: '#16A34A', borderRadius: '12px', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>
+                  Event Created Successfully! 🏁
+                </div>
+              )}
 
               <button
                 onClick={handleSubmit}
-                disabled={uploading || isPending}
+                disabled={uploading || isPending || isConfirming}
                 style={{ width: '100%', padding: '16px', background: '#0F0A1E', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 700, cursor: 'pointer' }}
               >
-                {uploading ? 'Uploading...' : isPending ? 'Confirm in Wallet...' : 'Deploy to Blockchain'}
+                {uploading ? 'Uploading to IPFS... ☁️' : isPending ? 'Check Your Wallet... 🔑' : isConfirming ? 'Confirming Transaction... ⛓️' : 'Deploy to Blockchain 🚀'}
               </button>
             </div>
           )}
