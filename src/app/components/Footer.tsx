@@ -115,7 +115,7 @@ export default function Footer() {
                 gap: '16px'
             }}>
                 <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-                    © 2026 TicketPro Ecosystem. Built by <a href="https://github.com/yudiant4" target="_blank" style={{ color: '#A855F7', textDecoration: 'none', fontWeight: 700 }}>Yudi</a>.
+                    © 2026 TicketPro Ecosystem. Built by <a href="https://github.com/yudiant4" target="_blank" style={{ color: '#A855F7', textDecoration: 'none', fontWeight: 700 }}>Oxyudiant4_</a>.
                 </div>
                 <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
                     <Link href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</Link>
