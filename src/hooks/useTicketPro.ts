@@ -3,6 +3,17 @@ import { parseEther, formatEther } from 'viem'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import { sepolia } from 'wagmi/chains'
 
+// 1. Hook untuk mengambil SEMUA Event (Penting untuk Market)
+export function useEvents() {
+  return useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'getAllEvents', // Pastikan nama fungsi di Smart Contract kamu benar
+    chainId: sepolia.id,
+    query: { refetchInterval: 10_000 }
+  })
+}
+
 export function useETHPrice() {
   return useReadContract({
     address: '0x694AA1769357215DE4FAC081bf1f309aDC325306' as `0x${string}`,
@@ -23,7 +34,7 @@ export function useEventCount() {
 }
 
 export function useEvent(eventId: bigint) {
-  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getEventDetails', args: [eventId], chainId: sepolia.id, query: { enabled: eventId > BigInt(0) } })
+  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getEventDetails', args: [eventId], chainId: sepolia.id, query: { enabled: eventId >= BigInt(0) } })
 }
 
 export function useMyTickets() {
@@ -32,57 +43,26 @@ export function useMyTickets() {
 }
 
 export function useTicket(tokenId: bigint) {
-  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getEventDetails', args: [tokenId], chainId: sepolia.id, query: { enabled: tokenId > BigInt(0) } })
+  return useReadContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'tickets', args: [tokenId], chainId: sepolia.id, query: { enabled: tokenId >= BigInt(0) } })
 }
 
-// INI FUNGSI MINT YANG SUDAH DIPERBAIKI (Ada API Metadata + writeContractAsync)
+// 2. Hook Mint yang disesuaikan agar cocok dengan halaman Market
 export function useMintTicket() {
   const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  const mint = async (
-    eventId: bigint,
-    tier: string,
-    eventName: string,
-    date: string,
-    venue: string,
-    city: string,
-    price: string
-  ) => {
-    // Step 1: Upload metadata to IPFS first
-    const metadataRes = await fetch('/api/metadata', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        eventId: eventId.toString(),
-        eventName,
-        date,
-        venue,
-        city,
-        tier,
-        tokenId: Date.now(),
-        ownerAddress: 'pending',
-      }),
-    })
-
-    const metadataData = await metadataRes.json()
-
-    if (!metadataData.success) {
-      throw new Error('Failed to upload metadata to IPFS')
-    }
-
-    // Step 2: Mint NFT with IPFS URI
-    await writeContractAsync({
+  const mintTicket = async (eventId: bigint, options: { value: bigint }) => {
+    return await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'mintTicket',
-      args: [eventId, tier, metadataData.ipfsUri],
-      value: parseEther(price),
+      args: [eventId, "General"], // Tier default
+      value: options.value,
       chainId: sepolia.id,
     })
   }
 
-  return { mint, hash, isPending, isConfirming, isSuccess, error }
+  return { mintTicket, hash, isPending, isConfirming, isSuccess, error }
 }
 
 export function useUseTicket() {
@@ -94,35 +74,24 @@ export function useUseTicket() {
   return { useTicketFn, hash, isPending, isSuccess, error }
 }
 
-
 export function useCreateEvent() {
   const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
-  
   const createEvent = async (
     name: string,
     date: string,
-    venue: string,
-    price: string,
+    location: string,
+    price: bigint, // Sekarang menerima BigInt langsung dari parseEther di UI
     maxSupply: bigint,
     royaltyPercent: bigint,
-    metadataURI: string 
+    metadataURI: string
   ) => {
     return await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'createEvent',
-    
-      args: [
-        name,
-        date,
-        venue,
-        parseEther(price),
-        maxSupply,
-        royaltyPercent,
-        metadataURI 
-      ],
+      args: [name, date, location, price, maxSupply, royaltyPercent, metadataURI],
       chainId: sepolia.id
     })
   }
@@ -130,6 +99,7 @@ export function useCreateEvent() {
   return { createEvent, hash, isPending, isConfirming, isSuccess, error }
 }
 
+// Utils
 export function formatETH(wei: bigint): string { return parseFloat(formatEther(wei)).toFixed(4) }
 export function ethToUSD(eth: number, ethPrice: number): string { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(eth * ethPrice) }
 export function shortenAddress(address: string): string { return `${address.slice(0, 6)}...${address.slice(-4)}` }
