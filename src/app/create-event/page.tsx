@@ -1,21 +1,22 @@
 'use client'
 
-// PERBAIKAN: Agar build Vercel lancar saat membaca data dinamis
+// Wajib agar build Vercel lancar
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useCreateEvent } from '@/hooks/useTicketPro'
 import Navbar from '../components/Navbar'
-
+import Footer from '../components/Footer'
 
 export default function CreateEventPage() {
+    // PENGAMAN 1: State Mounted untuk cegah Hydration Error
+    const [mounted, setMounted] = useState(false);
     const { isConnected } = useAccount()
-    const { createEvent, isPending, isConfirming, isSuccess } = useCreateEvent()
+    const { createEvent, isPending, isConfirming } = useCreateEvent()
     const [isMobile, setIsMobile] = useState(false)
     const [step, setStep] = useState(1)
 
-    // Form State Lengkap (Deskripsi & Kategori hadir kembali)
     const [form, setForm] = useState({
         name: '',
         date: '',
@@ -25,41 +26,34 @@ export default function CreateEventPage() {
         description: '', 
         price: '',
         maxSupply: '',
-        royalty: '500', // 5%
+        royalty: '500', 
     })
     
     const [file, setFile] = useState<File | null>(null)
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null); // State untuk Live Preview
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     const categories = ['Music 🎵', 'Art 🎨', 'Tech 💻', 'Sports 🏟️', 'Theater 🎭', 'Web3 🌐', 'Gaming 🎮']
 
+    // PENGAMAN 2: Jalankan useEffect untuk handle mounting & resize
     useEffect(() => {
+        setMounted(true); // Tandai bahwa komponen sudah di-load di browser
         const handleResize = () => setIsMobile(window.innerWidth < 768)
         handleResize(); window.addEventListener('resize', handleResize)
         
-        // Cleanup URL preview saat komponen unmount untuk mencegah memory leak
         return () => {
             if (previewUrl) URL.revokeObjectURL(previewUrl);
             window.removeEventListener('resize', handleResize);
         }
     }, [previewUrl])
 
-    // Fungsi handle perubahan file untuk Live Preview
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
             setFile(selectedFile);
-            // Jika ada preview sebelumnya, hapus dulu dari memori
             if (previewUrl) URL.revokeObjectURL(previewUrl);
-            // Buat URL baru untuk gambar yang dipilih
-            const url = URL.createObjectURL(selectedFile);
-            setPreviewUrl(url);
-        } else {
-            setFile(null);
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
-            setPreviewUrl(null);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
         }
     };
 
@@ -70,7 +64,7 @@ export default function CreateEventPage() {
             if (!form.date) newErrors.date = 'Required';
             if (!form.description) newErrors.description = 'Required';
             if (!form.city) newErrors.city = 'Required';
-            if (!file) newErrors.file = 'Poster is required 🖼️'; // Validasi poster
+            if (!file) newErrors.file = 'Poster Required 🖼️';
         } else if (currentStep === 2) {
             if (!form.price || parseFloat(form.price) <= 0) newErrors.price = 'Invalid';
             if (!form.maxSupply || parseInt(form.maxSupply) <= 0) newErrors.maxSupply = 'Invalid';
@@ -81,7 +75,7 @@ export default function CreateEventPage() {
 
     const handleSubmit = async () => {
         if (!validate(2)) return;
-        if (!file) { alert("Please upload a poster image 🖼️"); return; }
+        if (!file) return;
         
         setUploading(true);
         try {
@@ -89,9 +83,10 @@ export default function CreateEventPage() {
             formData.append("file", file);
             const res = await fetch("/api/pinata", { method: "POST", body: formData });
             const data = await res.json();
-            const metadataURI = `ipfs://${data.ipfsHash}`;
+            
+            // Safety check untuk IPFS Hash
+            if (!data.ipfsHash) throw new Error("Pinata upload failed");
 
-            // Deploy ke Blockchain
             await createEvent(
                 form.name,
                 form.date,
@@ -99,10 +94,11 @@ export default function CreateEventPage() {
                 form.price || '0',
                 BigInt(form.maxSupply || '0'),
                 BigInt(form.royalty || '500'),
-                metadataURI
+                `ipfs://${data.ipfsHash}`
             );
         } catch (err) {
-            alert("Failed to create event. Please check connection 🌐");
+            console.error(err);
+            alert("Error: Check console for details 🌐");
         } finally { setUploading(false); }
     };
 
@@ -110,14 +106,16 @@ export default function CreateEventPage() {
         width: '100%', padding: '14px 16px',
         border: `2px solid ${errors[field] ? '#EF4444' : '#F3F0FF'}`,
         borderRadius: '14px', fontSize: '15px', outline: 'none', background: 'white',
-        fontFamily: 'inherit', transition: '0.3s'
+        fontFamily: 'inherit'
     })
+
+    // JANGAN RENDER APAPUN SEBELUM MOUNTED (Cegah Client-Side Exception)
+    if (!mounted) return null;
 
     if (!isConnected) {
         return (
-            <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '60px' }}>🔑</div>
-                <h2 style={{ fontWeight: 800, margin: '20px 0' }}>Connect Wallet to Create Event</h2>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '20px', textAlign: 'center' }}>
+                <h2 style={{ fontWeight: 800, marginBottom: '20px' }}>Please connect wallet 🔑</h2>
                 <w3m-button />
             </div>
         )
@@ -126,153 +124,63 @@ export default function CreateEventPage() {
     return (
         <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             <Navbar />
-
-            {/* HEADER */}
             <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 20px' : '80px 48px', marginTop: '72px' }}>
                 <div style={{ maxWidth: '800px', margin: '0 auto', color: 'white' }}>
                     <h1 style={{ fontSize: isMobile ? '32px' : '42px', fontWeight: 800 }}>Create New Event ✨</h1>
-                    <p style={{ opacity: 0.9 }}>Launch your NFT ticketing contract on the blockchain 🚀</p>
                 </div>
             </div>
 
             <div style={{ maxWidth: '850px', margin: '-40px auto 100px', padding: '0 20px' }}>
-                {/* Stepper Progress */}
-                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
-                  {[1, 2, 3].map(s => (
-                    <div key={s} style={{ flex: 1, height: '6px', background: step >= s ? '#7C3AED' : '#E8E4F5', borderRadius: '10px' }}></div>
-                  ))}
-                </div>
-
-                <div style={{ background: 'white', padding: isMobile ? '24px' : '40px', borderRadius: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.05)', border: '1px solid #E8E4F5' }}>
+                <div style={{ background: 'white', padding: isMobile ? '24px' : '40px', borderRadius: '32px', border: '1px solid #E8E4F5' }}>
                     
-                    {/* STEP 1: INFO LENGKAP + LIVE PREVIEW */}
                     {step === 1 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <h2 style={{ fontWeight: 800 }}>Event Information 📝</h2>
+                            <h2 style={{ fontWeight: 800 }}>Event Info 📝</h2>
+                            <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={inputStyle('name')} placeholder="Event Name" />
                             
-                            <div>
-                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Event Name</label>
-                                <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={inputStyle('name')} placeholder="e.g. Electronic Horizon Festival" />
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+                                <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} style={inputStyle('date')} />
+                                <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={inputStyle('category')}>
+                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
                             </div>
+
+                            <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} style={{ ...inputStyle('description'), height: '120px', resize: 'none' }} placeholder="Description..." />
 
                             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Date 📅</label>
-                                    <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} style={inputStyle('date')} />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Category 🏷️</label>
-                                    <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={inputStyle('category')}>
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
+                                <input value={form.city} onChange={e => setForm({...form, city: e.target.value})} style={inputStyle('city')} placeholder="Surabaya" />
+                                <input value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} style={inputStyle('venue')} placeholder="Grand City" />
                             </div>
 
-                            <div>
-                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Description 📖</label>
-                                <textarea 
-                                    value={form.description} 
-                                    onChange={e => setForm({...form, description: e.target.value})} 
-                                    style={{ ...inputStyle('description'), height: '120px', resize: 'none' }} 
-                                    placeholder="Tell the world what makes your event special..."
-                                />
-                            </div>
+                            <input type="file" accept="image/*" onChange={handleFileChange} style={inputStyle('file')} />
+                            {previewUrl && <img src={previewUrl} alt="Preview" style={{ maxHeight: '150px', borderRadius: '12px', objectFit: 'contain' }} />}
 
-                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>City 📍</label>
-                                    <input value={form.city} onChange={e => setForm({...form, city: e.target.value})} style={inputStyle('city')} placeholder="Jakarta" />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Venue 🏟️</label>
-                                    <input value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} style={inputStyle('venue')} placeholder="JIEXPO Hall A" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Poster Image 🖼️</label>
-                                <input type="file" accept="image/*" onChange={handleFileChange} style={inputStyle('file')} />
-                                
-                                {/* === LIVE PREVIEW DISINI === */}
-                                {previewUrl && (
-                                    <div style={{ marginTop: '16px', border: '1px solid #F3F0FF', borderRadius: '14px', padding: '10px', background: '#FAFAFF', textAlign: 'center' }}>
-                                        <img 
-                                            src={previewUrl} 
-                                            alt="Poster Preview" 
-                                            style={{ maxHeight: '200px', maxWidth: '100%', borderRadius: '10px', objectFit: 'contain' }} 
-                                        />
-                                        <button 
-                                            onClick={() => { setFile(null); setPreviewUrl(null); }}
-                                            style={{ display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: '#EF4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
-                                        >
-                                            Remove X
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-
-                            <button onClick={() => validate(1) && setStep(2)} style={{ padding: '16px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', fontSize: '16px' }}>Next: Ticket Config ➡️</button>
+                            <button onClick={() => validate(1) && setStep(2)} style={{ padding: '16px', background: '#7C3AED', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Next ➡️</button>
                         </div>
                     )}
 
-                    {/* STEP 2: CONFIG */}
                     {step === 2 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <h2 style={{ fontWeight: 800 }}>Ticket Configuration ⚙️</h2>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Price (ETH) 💎</label>
-                                    <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} style={inputStyle('price')} placeholder="0.05" />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Max Supply 🎫</label>
-                                    <input type="number" value={form.maxSupply} onChange={e => setForm({...form, maxSupply: e.target.value})} style={inputStyle('maxSupply')} placeholder="1000" />
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', borderRadius: '14px', border: '2px solid #F3F0FF', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '16px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}>Review & Deploy ➡️</button>
-                            </div>
+                            <h2 style={{ fontWeight: 800 }}>Pricing ⚙️</h2>
+                            <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} style={inputStyle('price')} placeholder="Price in ETH" />
+                            <input type="number" value={form.maxSupply} onChange={e => setForm({...form, maxSupply: e.target.value})} style={inputStyle('maxSupply')} placeholder="Total Tickets" />
+                            <button onClick={() => validate(2) && setStep(3)} style={{ padding: '16px', background: '#7C3AED', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Review ➡️</button>
                         </div>
                     )}
 
-                    {/* STEP 3: REVIEW LENGKAP */}
                     {step === 3 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <h2 style={{ fontWeight: 800 }}>Final Review ✅</h2>
-                            
-                            {/* Review Box Grid (Poster di Kiri, Info di Kanan) */}
-                            <div style={{ background: '#FAFAFF', padding: '24px', borderRadius: '18px', border: '1px solid #F3F0FF', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: '20px', alignItems: 'center' }}>
-                                {/* Preview di Review */}
-                                {previewUrl && (
-                                    <img src={previewUrl} alt="Poster" style={{ width: '100%', height: '120px', borderRadius: '12px', objectFit: 'cover' }} />
-                                )}
-                                <div>
-                                    <div style={{ marginBottom: '8px' }}>🏁 <b>Event:</b> {form.name}</div>
-                                    <div style={{ marginBottom: '8px' }}>📖 <b>Description:</b> <p style={{ fontSize: '13px', color: '#4B4869', marginTop: '3px', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{form.description}</p></div>
-                                    <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
-                                        <span>📅 {form.date}</span>
-                                        <span>💎 {form.price} ETH</span>
-                                        <span>🎫 {form.maxSupply} Qty</span>
-                                    </div>
-                                </div>
+                            <h2 style={{ fontWeight: 800 }}>Deploy ✅</h2>
+                            <div style={{ background: '#FAFAFF', padding: '20px', borderRadius: '16px' }}>
+                                <p>🏁 {form.name} | 💎 {form.price} ETH | 🎫 {form.maxSupply} Qty</p>
                             </div>
-
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button onClick={() => setStep(2)} style={{ flex: 1, padding: '16px', borderRadius: '14px', border: '2px solid #F3F0FF', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                                <button 
-                                    onClick={handleSubmit} 
-                                    disabled={uploading || isPending}
-                                    style={{ flex: 2, padding: '16px', background: '#0F0A1E', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}
-                                >
-                                    {uploading ? 'Uploading to IPFS... ☁️' : isPending ? 'Confirm in Wallet... 🔑' : 'Deploy to Blockchain 🚀'}
-                                </button>
-                            </div>
+                            <button onClick={handleSubmit} disabled={uploading || isPending} style={{ padding: '16px', background: '#0F0A1E', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>
+                                {uploading ? 'Uploading... ☁️' : isPending ? 'Confirming... 🔑' : 'Create Event 🚀'}
+                            </button>
                         </div>
                     )}
                 </div>
             </div>
-
             <Footer />
         </main>
     )
