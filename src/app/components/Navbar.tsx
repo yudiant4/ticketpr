@@ -2,16 +2,6 @@
 
 import Link from 'next/link'
 
-// Menggunakan 'any' agar tidak bentrok dengan definisi internal library AppKit
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'w3m-button': any;
-      'w3m-network-button': any;
-    }
-  }
-}
-
 export default function Navbar() {
   return (
     <nav style={{
