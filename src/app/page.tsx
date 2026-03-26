@@ -40,13 +40,12 @@ export default function Home() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-          {/* FIX LINK: Pastikan /create sesuai dengan folder src/app/create */}
-          <Link href="/create" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Create Event</Link>
+          {/* Ganti /create menjadi /create-event */}
+          <Link href="/create-event" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Create Event</Link>
 
-          {/* FIX LINK: Karena folder kamu namanya 'events', gunakan /events (bukan /market) */}
+          {/* Gunakan /events karena foldermu namanya 'events' */}
           <Link href="/events" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
 
-          {/* FIX LINK: Pastikan /dashboard sesuai dengan folder src/app/dashboard */}
           <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Dashboard</Link>
         </div>
 

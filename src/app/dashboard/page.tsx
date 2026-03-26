@@ -105,7 +105,7 @@ export default function DashboardPage() {
 
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>EXPLORE</div>
           <SidebarItem label="Market" isLink={true} linkUrl="/events" icon="🛍️" />
-          <SidebarItem label="Verify Ticket" isLink={true} linkUrl="/verification" icon="🛡️" />
+          <SidebarItem label="Verify Ticket" isLink={true} linkUrl="" /verify" icon="🛡️" />
 
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>PERSONAL</div>
           <SidebarItem label="Profile" tabId="profile" icon="👤" />
