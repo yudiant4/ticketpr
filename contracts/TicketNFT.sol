@@ -123,6 +123,50 @@ function createEvent(
         emit TicketUsed(_tokenId);
     }
 
+
+// --- TAMBAHAN BARU: STRUCT & FUNGSI UNTUK HALAMAN MARKET ---
+    
+    // Struct khusus agar frontend bisa mendapatkan ID event sekaligus
+    struct EventView {
+        uint256 id;
+        string name;
+        string date;
+        string venue;
+        uint256 price;
+        uint256 maxSupply;
+        uint256 minted;
+        bool active;
+        address organizer;
+        uint256 royaltyPercent;
+        string metadataURI;
+    }
+
+    // Fungsi untuk memanggil semua event (yang dicari oleh frontend)
+    function getAllEvents() external view returns (EventView[] memory) {
+        uint256 total = eventCount;
+        EventView[] memory result = new EventView[](total);
+        
+        for (uint256 i = 1; i <= total; i++) {
+            Event storage ev = events[i];
+            result[i - 1] = EventView({
+                id: i,
+                name: ev.name,
+                date: ev.date,
+                venue: ev.venue,
+                price: ev.price,
+                maxSupply: ev.maxSupply,
+                minted: ev.minted,
+                active: ev.active,
+                organizer: ev.organizer,
+                royaltyPercent: ev.royaltyPercent,
+                metadataURI: ev.metadataURI
+            });
+        }
+        return result;
+    }
+    // -----------------------------------------------------------
+
+
     // --- PERBAIKAN NAMA FUNGSI DI SINI ---
     // Mengubah 'getEvent' menjadi 'getEventDetails' agar tidak bentrok dengan fungsi internal ethers.js
     function getEventDetails(uint256 _eventId) external view returns (Event memory) {

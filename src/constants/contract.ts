@@ -1,12 +1,17 @@
 import TicketNFTJson from './TicketNFT.json'
 
-export const CONTRACT_ADDRESS = '0x6155dEe4e749752Cdf3CA83B88A37965F729027E'
+export const CONTRACT_ADDRESS = '0xC009ec3BD97c8bfcF14A09A7408b15345c5d8079'
 
 export const CONTRACT_ABI = [{
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
 },
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
     {
         "inputs": [
             {
@@ -548,6 +553,76 @@ export const CONTRACT_ABI = [{
                 "internalType": "string",
                 "name": "metadataURI",
                 "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getAllEvents",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "uint256",
+                        "name": "id",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "date",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "venue",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "maxSupply",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "minted",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "active",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "organizer",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "royaltyPercent",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "metadataURI",
+                        "type": "string"
+                    }
+                ],
+                "internalType": "struct TicketNFT.EventView[]",
+                "name": "",
+                "type": "tuple[]"
             }
         ],
         "stateMutability": "view",

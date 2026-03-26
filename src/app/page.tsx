@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link'
-import { useState } from 'react'
 
 export default function Home() {
   return (
@@ -18,6 +17,7 @@ export default function Home() {
         borderBottom: '1px solid #E8E4F5',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '20px', color: '#0F0A1E', textDecoration: 'none' }}>
+          {/* Logo Brand Konsisten */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="24" height="24" rx="6" fill="url(#brand-grad-home)" />
@@ -45,7 +45,8 @@ export default function Home() {
           <Link href="/events" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
           <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Dashboard</Link>
         </div>
-         {/* @ts-ignore */}
+
+        {/* @ts-ignore */}
         <w3m-button />
       </nav>
 
@@ -86,14 +87,73 @@ export default function Home() {
         </div>
       </section>
 
+      {/* STATS BAR */}
+      <div style={{ background: 'white', borderTop: '1px solid #E8E4F5', borderBottom: '1px solid #E8E4F5', padding: '28px 48px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '24px' }}>
+          {[
+            { num: '2,400+', label: 'Live Events' },
+            { num: '128K+', label: 'NFTs Minted' },
+            { num: '45K+', label: 'Active Users' },
+            { num: '$4.2M+', label: 'Trading Volume' },
+          ].map((s, i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', padding: '0 24px', borderRight: i < 3 ? '1px solid #E8E4F5' : 'none' }}>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#0F0A1E' }}>{s.num}</div>
+              <div style={{ fontSize: '13px', color: '#9896B0', marginTop: '3px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* HOW IT WORKS */}
+      <div style={{ background: '#FAFAFF', borderBottom: '1px solid #E8E4F5', padding: '80px 48px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '50px', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em' }}>How TicketPro Works</h2>
+            <p style={{ color: '#9896B0', marginTop: '8px' }}>The next generation of event access</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '40px' }}>
+            {[
+              { num: '1', title: 'Connect Wallet', desc: 'Link MetaMask or Coinbase. Your wallet is your identity — no password needed.' },
+              { num: '2', title: 'Mint Ticket', desc: 'Pick your event, choose your tier, and mint your NFT ticket directly to your wallet.' },
+              { num: '3', title: 'Attend Event', desc: 'Show your unique NFT QR code at the gate for instant blockchain verification.' },
+            ].map((s, i) => (
+              <div key={i} style={{ textAlign: 'center', background: 'white', padding: '32px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
+                <div style={{ width: '48px', height: '48px', background: '#7C3AED', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontWeight: 800 }}>{s.num}</div>
+                <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '10px' }}>{s.title}</div>
+                <p style={{ fontSize: '14px', lineHeight: 1.7, color: '#9896B0' }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* FOOTER */}
       <footer style={{ background: '#0F0A1E', color: 'white', padding: '60px 48px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '48px', marginBottom: '48px' }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '20px', marginBottom: '14px' }}>TicketPro</div>
+              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, maxWidth: '240px' }}>Web3 NFT ticketing platform for the next generation of live events.</p>
+            </div>
+            {[
+              { title: 'Explore', links: ['Marketplace', 'Events', 'Collections'] },
+              { title: 'Resources', links: ['Help Center', 'Blog', 'Contact'] },
+              { title: 'Legal', links: ['Privacy', 'Terms', 'Cookies'] },
+            ].map((col, i) => (
+              <div key={i}>
+                <h4 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '16px' }}>{col.title}</h4>
+                {col.links.map((l, j) => (
+                  <a key={j} href="#" style={{ display: 'block', fontSize: '14px', color: 'rgba(255,255,255,0.7)', textDecoration: 'none', marginBottom: '10px' }}>{l}</a>
+                ))}
+              </div>
+            ))}
+          </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '24px', fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>
-            © 2026 TicketPro. Built for the future of events.
+            © 2026 TicketPro. All rights reserved.
           </div>
         </div>
       </footer>
+
     </main>
   )
 }

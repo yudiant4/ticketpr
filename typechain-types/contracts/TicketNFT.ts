@@ -24,6 +24,46 @@ import type {
 } from "../common";
 
 export declare namespace TicketNFT {
+  export type EventViewStruct = {
+    id: BigNumberish;
+    name: string;
+    date: string;
+    venue: string;
+    price: BigNumberish;
+    maxSupply: BigNumberish;
+    minted: BigNumberish;
+    active: boolean;
+    organizer: AddressLike;
+    royaltyPercent: BigNumberish;
+    metadataURI: string;
+  };
+
+  export type EventViewStructOutput = [
+    id: bigint,
+    name: string,
+    date: string,
+    venue: string,
+    price: bigint,
+    maxSupply: bigint,
+    minted: bigint,
+    active: boolean,
+    organizer: string,
+    royaltyPercent: bigint,
+    metadataURI: string
+  ] & {
+    id: bigint;
+    name: string;
+    date: string;
+    venue: string;
+    price: bigint;
+    maxSupply: bigint;
+    minted: bigint;
+    active: boolean;
+    organizer: string;
+    royaltyPercent: bigint;
+    metadataURI: string;
+  };
+
   export type EventStruct = {
     name: string;
     date: string;
@@ -84,6 +124,7 @@ export interface TicketNFTInterface extends Interface {
       | "createEvent"
       | "eventCount"
       | "events"
+      | "getAllEvents"
       | "getApproved"
       | "getEventDetails"
       | "getTicket"
@@ -151,6 +192,10 @@ export interface TicketNFTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "events",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAllEvents",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
@@ -252,6 +297,10 @@ export interface TicketNFTInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "eventCount", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "events", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getAllEvents",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -571,6 +620,12 @@ export interface TicketNFT extends BaseContract {
     "view"
   >;
 
+  getAllEvents: TypedContractMethod<
+    [],
+    [TicketNFT.EventViewStructOutput[]],
+    "view"
+  >;
+
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
   getEventDetails: TypedContractMethod<
@@ -764,6 +819,9 @@ export interface TicketNFT extends BaseContract {
     ],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "getAllEvents"
+  ): TypedContractMethod<[], [TicketNFT.EventViewStructOutput[]], "view">;
   getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
