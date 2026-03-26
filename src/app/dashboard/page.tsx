@@ -9,7 +9,8 @@ import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import { QRCodeSVG } from 'qrcode.react'
 import Navbar from '../components/Navbar'
 
-// --- TICKET CARD COMPONENT ---
+// --- HELPER COMPONENTS (Dipindah ke luar agar anti-error) ---
+
 const TicketCard = ({ ticketId }: { ticketId: string }) => {
   const [isFlipped, setIsFlipped] = useState(false)
   return (
@@ -23,8 +24,7 @@ const TicketCard = ({ ticketId }: { ticketId: string }) => {
           <div style={{ textAlign: 'center', fontSize: '13px', opacity: 0.8 }}>Tap to show QR Code 🔍</div>
         </div>
         <div style={{ position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', background: 'white', border: '2px solid #E8E4F5', borderRadius: '24px', padding: '30px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: 'rotateY(180deg)' }}>
-          {/* Link ke halaman verifikasi menggunakan Token ID */}
-          <QRCodeSVG value={`${window.location.origin}/verification?tokenId=${ticketId}`} size={150} />
+          <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/verify?tokenId=${ticketId}`} size={150} />
           <div style={{ marginTop: '20px', fontWeight: 800 }}>Ticket #{ticketId}</div>
           <div style={{ fontSize: '12px', color: '#9896B0' }}>Scan at Event Gate 🎫</div>
         </div>
@@ -39,6 +39,8 @@ const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean, onToggle: () => void 
   </div>
 )
 
+// --- MAIN PAGE ---
+
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
   const { data: balance } = useBalance({ address })
@@ -49,10 +51,7 @@ export default function DashboardPage() {
   const [testnetMode, setTestnetMode] = useState(true)
 
   const { data: myTickets, isLoading } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: CONTRACT_ABI,
-    functionName: 'getTicketsByOwner',
-    args: address ? [address] : undefined,
+    address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getTicketsByOwner', args: address ? [address] : undefined,
   })
 
   useEffect(() => {
@@ -72,24 +71,12 @@ export default function DashboardPage() {
     )
   }
 
-  // PENGAMAN: Pastikan data tiket selalu berupa array agar tidak crash saat .map
   const ticketList = Array.isArray(myTickets) ? myTickets : [];
-
-  const SidebarItem = ({ label, tabId, icon, isLink = false, linkUrl = "/" }: any) => {
-    const isActive = activeTab === tabId;
-    return isLink ? (
-      <Link href={linkUrl} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', textDecoration: 'none', color: '#4B4869', fontWeight: 600, marginBottom: '6px', transition: '0.2s' }}>
-        <span style={{ fontSize: '18px' }}>{icon}</span> <span style={{ fontSize: '14px' }}>{label}</span>
-      </Link>
-    ) : (
-      <button onClick={() => setActiveTab(tabId)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', width: '100%', border: 'none', background: isActive ? '#F3F0FF' : 'transparent', color: isActive ? '#7C3AED' : '#4B4869', fontWeight: isActive ? 700 : 600, cursor: 'pointer', marginBottom: '6px', textAlign: 'left', transition: '0.2s' }}>
-        <span style={{ fontSize: '18px' }}>{icon}</span> <span style={{ fontSize: '14px' }}>{label}</span>
-      </button>
-    )
-  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+
+      {/* SIDEBAR */}
       <aside style={{ width: '280px', background: 'white', borderRight: '1px solid #E8E4F5', display: isMobile ? 'none' : 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', zIndex: 10 }}>
         <div style={{ padding: '24px', borderBottom: '1px solid #E8E4F5' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -100,19 +87,34 @@ export default function DashboardPage() {
 
         <div style={{ padding: '24px 16px', flex: 1 }}>
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', marginBottom: '16px', paddingLeft: '16px', letterSpacing: '1px' }}>MAIN MENU</div>
-          <SidebarItem label="My Collections" tabId="upcoming" icon="🖼️" />
-          <SidebarItem label="My Earnings" tabId="earnings" icon="💰" />
+
+          <button onClick={() => setActiveTab('upcoming')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', width: '100%', border: 'none', background: activeTab === 'upcoming' ? '#F3F0FF' : 'transparent', color: activeTab === 'upcoming' ? '#7C3AED' : '#4B4869', fontWeight: activeTab === 'upcoming' ? 700 : 600, cursor: 'pointer', marginBottom: '6px', textAlign: 'left' }}>
+            <span style={{ fontSize: '18px' }}>🖼️</span> <span style={{ fontSize: '14px' }}>My Collections</span>
+          </button>
+
+          <button onClick={() => setActiveTab('earnings')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', width: '100%', border: 'none', background: activeTab === 'earnings' ? '#F3F0FF' : 'transparent', color: activeTab === 'earnings' ? '#7C3AED' : '#4B4869', fontWeight: activeTab === 'earnings' ? 700 : 600, cursor: 'pointer', marginBottom: '6px', textAlign: 'left' }}>
+            <span style={{ fontSize: '18px' }}>💰</span> <span style={{ fontSize: '14px' }}>My Earnings</span>
+          </button>
 
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>EXPLORE</div>
-          <SidebarItem label="Market" isLink={true} linkUrl="/events" icon="🛍️" />
-          <SidebarItem label="Verify Ticket" isLink={true} linkUrl="" /verify" icon="🛡️" />
+          <Link href="/events" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', textDecoration: 'none', color: '#4B4869', fontWeight: 600, marginBottom: '6px' }}>
+            <span style={{ fontSize: '18px' }}>🛍️</span> <span style={{ fontSize: '14px' }}>Market</span>
+          </Link>
+          <Link href="/verify" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', textDecoration: 'none', color: '#4B4869', fontWeight: 600, marginBottom: '6px' }}>
+            <span style={{ fontSize: '18px' }}>🛡️</span> <span style={{ fontSize: '14px' }}>Verify Ticket</span>
+          </Link>
 
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>PERSONAL</div>
-          <SidebarItem label="Profile" tabId="profile" icon="👤" />
-          <SidebarItem label="Settings" tabId="settings" icon="⚙️" />
+          <button onClick={() => setActiveTab('profile')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', width: '100%', border: 'none', background: activeTab === 'profile' ? '#F3F0FF' : 'transparent', color: activeTab === 'profile' ? '#7C3AED' : '#4B4869', fontWeight: activeTab === 'profile' ? 700 : 600, cursor: 'pointer', marginBottom: '6px', textAlign: 'left' }}>
+            <span style={{ fontSize: '18px' }}>👤</span> <span style={{ fontSize: '14px' }}>Profile</span>
+          </button>
+          <button onClick={() => setActiveTab('settings')} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 20px', borderRadius: '14px', width: '100%', border: 'none', background: activeTab === 'settings' ? '#F3F0FF' : 'transparent', color: activeTab === 'settings' ? '#7C3AED' : '#4B4869', fontWeight: activeTab === 'settings' ? 700 : 600, cursor: 'pointer', marginBottom: '6px', textAlign: 'left' }}>
+            <span style={{ fontSize: '18px' }}>⚙️</span> <span style={{ fontSize: '14px' }}>Settings</span>
+          </button>
         </div>
       </aside>
 
+      {/* CONTENT AREA */}
       <main style={{ flex: 1, marginLeft: isMobile ? '0' : '280px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: isMobile ? '24px' : '48px', flex: 1 }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
@@ -120,7 +122,7 @@ export default function DashboardPage() {
               <h1 style={{ fontSize: '32px', fontWeight: 800 }}>
                 {activeTab === 'earnings' ? 'Financial Overview 💰' : activeTab === 'settings' ? 'Dashboard Settings ⚙️' : `Hello, ${username || 'Collector'} 👋`}
               </h1>
-              <p style={{ color: '#9896B0', marginTop: '4px' }}>Welcome to your Web3 ticketing hub.</p>
+              <p style={{ color: '#9896B0', marginTop: '4px' }}>Welcome back to your hub.</p>
             </div>
             <w3m-button />
           </header>
@@ -128,11 +130,11 @@ export default function DashboardPage() {
           {activeTab === 'upcoming' && (
             <div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '24px', marginBottom: '48px' }}>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
                   <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Balance</div>
                   <div style={{ fontSize: '26px', fontWeight: 800, marginTop: '8px' }}>{balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.00 ETH'}</div>
                 </div>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #E8E4F5' }}>
                   <div style={{ fontSize: '13px', color: '#9896B0', fontWeight: 600 }}>Total NFTs</div>
                   <div style={{ fontSize: '26px', fontWeight: 800, marginTop: '8px' }}>{ticketList.length} Tickets</div>
                 </div>
@@ -140,7 +142,7 @@ export default function DashboardPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
                 {isLoading ? (
-                  <p>Loading your tickets... ⏳</p>
+                  <p>Loading tickets... ⏳</p>
                 ) : ticketList.length > 0 ? (
                   ticketList.map((id: any) => <TicketCard key={id.toString()} ticketId={id.toString()} />)
                 ) : (
@@ -154,7 +156,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ... SISA TAB EARNINGS, SETTINGS, PROFILE (Tetap Sama) ... */}
           {activeTab === 'earnings' && (
             <div style={{ maxWidth: '800px' }}>
               <div style={{ background: 'linear-gradient(135deg, #10B981, #059669)', padding: '40px', borderRadius: '32px', color: 'white', marginBottom: '32px' }}>
@@ -171,6 +172,10 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid #F3F0FF' }}>
                 <div><div style={{ fontWeight: 700 }}>Testnet Mode ⛓️</div><div style={{ fontSize: '12px', color: '#9896B0' }}>Show data from Sepolia network.</div></div>
                 <ToggleSwitch isOn={testnetMode} onToggle={() => setTestnetMode(!testnetMode)} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0' }}>
+                <div><div style={{ fontWeight: 700 }}>Hide Spam NFTs 🛡️</div><div style={{ fontSize: '12px', color: '#9896B0' }}>Hide unverified ticket collections.</div></div>
+                <ToggleSwitch isOn={hideSpam} onToggle={() => setHideSpam(!hideSpam)} />
               </div>
             </div>
           )}

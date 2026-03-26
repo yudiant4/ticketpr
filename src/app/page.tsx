@@ -86,7 +86,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#FAFAFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      
+
       <aside style={{ width: '280px', background: 'white', borderRight: '1px solid #E8E4F5', display: isMobile ? 'none' : 'flex', flexDirection: 'column', position: 'fixed', height: '100vh' }}>
         <div style={{ padding: '24px', borderBottom: '1px solid #E8E4F5' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', marginBottom: '16px', paddingLeft: '16px', letterSpacing: '1px' }}>MAIN MENU</div>
           <SidebarItem label="My Collections" tabId="upcoming" icon="🖼️" />
           <SidebarItem label="My Earnings" tabId="earnings" icon="💰" />
-          
+
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#9896B0', margin: '32px 0 16px', paddingLeft: '16px', letterSpacing: '1px' }}>EXPLORE</div>
           <SidebarItem label="Market" isLink={true} linkUrl="/events" icon="🛍️" />
           <SidebarItem label="Verify Ticket" isLink={true} linkUrl="/verify" icon="🛡️" />
