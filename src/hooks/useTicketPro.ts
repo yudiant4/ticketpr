@@ -7,6 +7,7 @@ export function useEvents() {
   return useReadContract({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
+    {/* @ts-ignore */}
     functionName: 'getAllEvents',
     chainId: sepolia.id,
     query: { refetchInterval: 10_000 }

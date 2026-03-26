@@ -45,7 +45,7 @@ export default function Home() {
           <Link href="/events" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Market</Link>
           <Link href="/dashboard" style={{ fontSize: '14px', fontWeight: 600, color: '#4B4869', textDecoration: 'none' }}>Dashboard</Link>
         </div>
-
+         {/* @ts-ignore */}
         <w3m-button />
       </nav>
 
