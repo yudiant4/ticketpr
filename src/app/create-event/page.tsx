@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi'
 import { parseEther } from 'viem'
 import { useCreateEvent } from '@/hooks/useTicketPro'
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+
 
 export default function CreateEventPage() {
     const [mounted, setMounted] = useState(false);

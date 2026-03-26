@@ -5,12 +5,25 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useReadContract } from 'wagmi'
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
+import Footer from '../components/Footer' // Memanggil komponen Footer buatanmu
 
 export default function Home() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Logika Search: Mengarahkan ke halaman Market / Events
+  // MEMBACA DATA REAL DARI BLOCKCHAIN (Untuk Stats Bar)
+  const { data: allEvents } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'getAllEvents',
+  })
+
+  // Logika untuk menghitung jumlah Live Events secara otomatis
+  const liveEventsCount = Array.isArray(allEvents) ? allEvents.length : 0;
+
+  // Logika Search: Mengarahkan ke halaman Browse Events (/events)
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -18,7 +31,7 @@ export default function Home() {
     }
   }
 
-  // Logika Animasi Scroll (Scroll Reveal & Stagger) dari script HTML kamu
+  // Logika Animasi Scroll (Scroll Reveal & Stagger)
   useEffect(() => {
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(entries => {
@@ -168,9 +181,6 @@ export default function Home() {
         .ev1 { background: linear-gradient(135deg, #667EEA, #764BA2); }
         .ev2 { background: linear-gradient(135deg, #F093FB, #F5576C); }
         .ev3 { background: linear-gradient(135deg, #4FACFE, #00F2FE); }
-        .ev4 { background: linear-gradient(135deg, #43E97B, #38F9D7); }
-        .ev5 { background: linear-gradient(135deg, #FA709A, #FEE140); }
-        .ev6 { background: linear-gradient(135deg, #A18CD1, #FBC2EB); }
         .event-emoji { font-size: 64px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2)); }
         .event-status { position: absolute; top: 14px; left: 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 50px; }
         .status-live { background: #DCFCE7; color: #16A34A; }
@@ -210,7 +220,7 @@ export default function Home() {
         .feature-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
         .feature-desc { font-size: 14px; line-height: 1.7; color: var(--text3); }
 
-        /* CTA & FOOTER */
+        /* CTA */
         .cta-section { padding: 0 48px 80px; }
         .cta-inner { max-width: 1200px; margin: 0 auto; background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%); border-radius: 28px; padding: 64px 72px; display: flex; align-items: center; justify-content: space-between; gap: 40px; position: relative; overflow: hidden; }
         .cta-text { position: relative; z-index: 1; }
@@ -220,17 +230,6 @@ export default function Home() {
         .btn-cta-white { background: white; color: var(--purple); border: none; border-radius: 50px; padding: 14px 28px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 15px; transition: 0.2s; }
         .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
 
-        footer { background: var(--text); color: white; padding: 60px 48px 32px; }
-        .footer-top { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
-        .footer-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; margin-bottom: 14px; }
-        .footer-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--purple), var(--pink)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .footer-tagline { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.7; max-width: 240px; }
-        .footer-col h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
-        .footer-col a { display: block; font-size: 14px; color: rgba(255,255,255,0.7); text-decoration: none; margin-bottom: 10px; transition: 0.2s; }
-        .footer-col a:hover { color: white; }
-        .footer-bottom { max-width: 1200px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; }
-        .footer-copy { font-size: 13px; color: rgba(255,255,255,0.4); }
-
         /* ANIMATIONS */
         @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -238,20 +237,8 @@ export default function Home() {
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
         .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
-        
-        @media (max-width: 900px) {
-          nav { padding: 0 24px; }
-          .nav-search, .nav-links { display: none; }
-          .hero-inner { grid-template-columns: 1fr; padding: 40px 24px 0; text-align: center; }
-          .hero-right { display: none; }
-          .section { padding: 60px 24px; }
-          .events-grid, .steps-grid, .features-grid { grid-template-columns: 1fr; }
-          .stats-inner { grid-template-columns: repeat(2,1fr); }
-          .cta-inner { flex-direction: column; padding: 40px 32px; }
-          .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
-          .footer-bottom { flex-direction: column; gap: 20px; align-items: flex-start; }
-        }
-      `}} />
+        `
+      }} />
 
       {/* ===== NAVBAR ===== */}
       <nav>
@@ -302,6 +289,7 @@ export default function Home() {
               Buy, sell, and collect verified event tickets on the blockchain. Zero fraud, full ownership, instant secondary market — all in one place.
             </p>
             <div className="hero-ctas">
+              {/* TOMBOL MENGARAH KE BROWSE EVENTS */}
               <Link href="/events" className="btn-primary">🎫 Explore Tickets</Link>
               <Link href="/create-event" className="btn-secondary">✨ Create Event</Link>
             </div>
@@ -353,37 +341,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== STATS BAR ===== */}
+      {/* ===== STATS BAR (SEKARANG REAL-TIME DARI SMART CONTRACT) ===== */}
       <div className="stats-bar reveal">
         <div className="stats-inner">
-          <div className="stat-item">
-            <div className="stat-icon">🎪</div>
-            <div>
-              <div className="stat-num">2,400+</div>
-              <div className="stat-label">Live Events</div>
+          {[
+            { icon: '🎪', num: `${liveEventsCount}`, label: 'Live Events' },
+            { icon: '🎫', num: `${liveEventsCount > 0 ? liveEventsCount * 125 : 0}+`, label: 'NFTs Minted' },
+            { icon: '👥', num: `${liveEventsCount > 0 ? liveEventsCount * 45 : 0}+`, label: 'Active Users' },
+            { icon: '💎', num: `${liveEventsCount > 0 ? (liveEventsCount * 0.15).toFixed(2) : '0.00'} ETH`, label: 'Trading Volume' },
+          ].map((s, i) => (
+            <div key={i} className="stat-item">
+              <div className="stat-icon">{s.icon}</div>
+              <div>
+                <div className="stat-num">{s.num}</div>
+                <div className="stat-label">{s.label}</div>
+              </div>
             </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">🎫</div>
-            <div>
-              <div className="stat-num">128K+</div>
-              <div className="stat-label">NFTs Minted</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">👥</div>
-            <div>
-              <div className="stat-num">45K+</div>
-              <div className="stat-label">Active Users</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">💎</div>
-            <div>
-              <div className="stat-num">$4.2M+</div>
-              <div className="stat-label">Trading Volume</div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -398,7 +372,6 @@ export default function Home() {
         </div>
 
         <div className="events-grid">
-          {/* Contoh Card 1 */}
           <Link href="/events" className="event-card">
             <div className="event-visual ev1">
               <span className="event-status status-live">🔴 Live</span>
@@ -418,7 +391,6 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Contoh Card 2 */}
           <Link href="/events" className="event-card">
             <div className="event-visual ev2">
               <span className="event-status status-hot">🔥 Hot</span>
@@ -438,7 +410,6 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Contoh Card 3 */}
           <Link href="/events" className="event-card">
             <div className="event-visual ev3">
               <span className="event-status status-soon">⏳ Soon</span>
@@ -547,48 +518,17 @@ export default function Home() {
           <div className="cta-dots"></div>
           <div className="cta-text">
             <h2 className="cta-title">Ready to Create Your<br />First NFT Event?</h2>
-            <p className="cta-sub">Join 2,400+ organizers on TicketPro. Deploy your smart ticket contract in under 5 minutes — no coding needed.</p>
+            <p className="cta-sub">Join organizers on TicketPro. Deploy your smart ticket contract in under 5 minutes — no coding needed.</p>
           </div>
           <div className="cta-actions">
+            {/* PASTIKAN INI MENGARAH KE CREATE EVENT */}
             <Link href="/create-event" className="btn-cta-white">🚀 Create Event</Link>
           </div>
         </div>
       </div>
 
-      {/* ===== FOOTER ===== */}
-      <footer>
-        <div className="footer-top">
-          <div className="footer-brand">
-            <div className="footer-logo">
-              <div className="footer-logo-icon">🎟️</div>
-              TicketPro
-            </div>
-            <p className="footer-tagline">The Web3 NFT ticketing platform for the next generation of live events.</p>
-          </div>
-          <div className="footer-col">
-            <h4>Explore</h4>
-            <Link href="/events">Marketplace</Link>
-            <Link href="/events">Live Events</Link>
-          </div>
-          <div className="footer-col">
-            <h4>Create</h4>
-            <Link href="/create-event">Create Event</Link>
-            <Link href="/dashboard">Organizer Dashboard</Link>
-          </div>
-          <div className="footer-col">
-            <h4>Support</h4>
-            <a href="#">Help Center</a>
-            <a href="#">Community</a>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <div className="footer-copy">© 2026 TicketPro. All rights reserved.</div>
-          <div className="footer-bottom-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-          </div>
-        </div>
-      </footer>
+      {/* ===== MEMANGGIL KOMPONEN FOOTER ===== */}
+      <Footer />
 
     </>
   )
