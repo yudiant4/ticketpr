@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useReadContract } from 'wagmi'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
-import Footer from '../components/Footer' // Memanggil komponen Footer buatanmu
+import Footer from '@/components/Footer' // Memanggil komponen Footer buatanmu
 
 export default function Home() {
   const router = useRouter()
