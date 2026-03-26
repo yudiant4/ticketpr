@@ -1,231 +1,112 @@
 'use client'
 
-// PERBAIKAN: Agar build Vercel lancar saat membaca data dinamis
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
-import { useCreateEvent } from '@/hooks/useTicketPro'
+import { useSearchParams } from 'next/navigation'
+import { useReadContract } from 'wagmi'
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract'
 import Navbar from '../components/Navbar'
+import { useState } from 'react'
 
+export default function VerificationPage() {
+  const searchParams = useSearchParams()
+  const tokenId = searchParams.get('tokenId')
+  const [inputToken, setInputToken] = useState('')
 
-export default function CreateEventPage() {
-    const { isConnected } = useAccount()
-    const { createEvent, isPending, isConfirming, isSuccess } = useCreateEvent()
-    const [isMobile, setIsMobile] = useState(false)
-    const [step, setStep] = useState(1)
+  // Membaca data Tiket dari Blockchain berdasarkan Token ID
+  const { data: ticket, isLoading, isError } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'getTicket',
+    args: tokenId ? [BigInt(tokenId)] : undefined,
+  })
 
-    // Form State Lengkap (Deskripsi & Kategori hadir kembali)
-    const [form, setForm] = useState({
-        name: '',
-        date: '',
-        venue: '',
-        city: '',
-        category: 'Music 🎵',
-        description: '', 
-        price: '',
-        maxSupply: '',
-        royalty: '500', 
-    })
-    
-    const [file, setFile] = useState<File | null>(null)
-    const [uploading, setUploading] = useState(false)
-    const [errors, setErrors] = useState<Record<string, string>>({})
+  // Membaca detail Event terkait tiket tersebut
+  const { data: event } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: 'getEventDetails',
+    args: ticket ? [(ticket as any).eventId] : undefined,
+  })
 
-    const categories = ['Music 🎵', 'Art 🎨', 'Tech 💻', 'Sports 🏟️', 'Theater 🎭', 'Web3 🌐', 'Gaming 🎮']
+  return (
+    <main style={{ background: '#FAFAFF', minHeight: '100vh', padding: '100px 24px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      <Navbar />
+      
+      <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+        <h1 style={{ fontWeight: 800, fontSize: '32px', marginBottom: '10px' }}>Ticket Verification 🛡️</h1>
+        <p style={{ color: '#9896B0', marginBottom: '40px' }}>Verify the authenticity of TicketPro NFTs</p>
 
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        handleResize(); window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
-    const validate = (currentStep: number) => {
-        const newErrors: Record<string, string> = {}
-        if (currentStep === 1) {
-            if (!form.name) newErrors.name = 'Required';
-            if (!form.date) newErrors.date = 'Required';
-            if (!form.description) newErrors.description = 'Required';
-            if (!form.city) newErrors.city = 'Required';
-        } else if (currentStep === 2) {
-            if (!form.price || parseFloat(form.price) <= 0) newErrors.price = 'Invalid';
-            if (!form.maxSupply || parseInt(form.maxSupply) <= 0) newErrors.maxSupply = 'Invalid';
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    }
-
-    const handleSubmit = async () => {
-        if (!validate(2)) return;
-        if (!file) { alert("Please upload a poster image 🖼️"); return; }
-        
-        setUploading(true);
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
-            const res = await fetch("/api/pinata", { method: "POST", body: formData });
-            const data = await res.json();
-            const metadataURI = `ipfs://${data.ipfsHash}`;
-
-            // Deploy ke Blockchain
-            await createEvent(
-                form.name,
-                form.date,
-                `${form.venue}, ${form.city}`,
-                form.price || '0',
-                BigInt(form.maxSupply || '0'),
-                BigInt(form.royalty || '500'),
-                metadataURI
-            );
-        } catch (err) {
-            alert("Failed to create event. Please check connection 🌐");
-        } finally { setUploading(false); }
-    };
-
-    const inputStyle = (field: string) => ({
-        width: '100%', padding: '14px 16px',
-        border: `2px solid ${errors[field] ? '#EF4444' : '#F3F0FF'}`,
-        borderRadius: '14px', fontSize: '15px', outline: 'none', background: 'white',
-        fontFamily: 'inherit', transition: '0.3s'
-    })
-
-    if (!isConnected) {
-        return (
-            <div style={{ minHeight: '100vh', background: '#FAFAFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '60px' }}>🔑</div>
-                <h2 style={{ fontWeight: 800, margin: '20px 0' }}>Connect Wallet to Create Event</h2>
-                <w3m-button />
+        {/* INPUT MANUAL JIKA TIDAK SCAN QR */}
+        {!tokenId && (
+          <div style={{ background: 'white', padding: '32px', borderRadius: '24px', border: '1px solid #E8E4F5', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+            <label style={{ display: 'block', fontWeight: 700, marginBottom: '12px', textAlign: 'left' }}>Enter Ticket ID</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input 
+                type="number" 
+                value={inputToken}
+                onChange={(e) => setInputToken(e.target.value)}
+                placeholder="e.g. 1" 
+                style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1.5px solid #F3F0FF', outline: 'none' }} 
+              />
+              <button 
+                onClick={() => window.location.href = `/verification?tokenId=${inputToken}`}
+                style={{ padding: '14px 24px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Verify
+              </button>
             </div>
-        )
-    }
+          </div>
+        )}
 
-    return (
-        <main style={{ background: '#FAFAFF', minHeight: '100vh', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-            <Navbar />
+        {/* HASIL VERIFIKASI */}
+        {tokenId && (
+          <div style={{ background: 'white', padding: '40px', borderRadius: '32px', border: '2px solid #E8E4F5', boxShadow: '0 20px 50px rgba(0,0,0,0.05)' }}>
+            {isLoading ? (
+              <p>Verifying ticket on blockchain... ⏳</p>
+            ) : ticket && (ticket as any).originalOwner !== "0x0000000000000000000000000000000000000000" ? (
+              <div className="fade-in">
+                <div style={{ width: '80px', height: '80px', background: '#DCFCE7', color: '#16A34A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', margin: '0 auto 24px' }}>✓</div>
+                <h2 style={{ fontWeight: 800, fontSize: '24px', color: '#16A34A' }}>Authentic Ticket</h2>
+                <p style={{ color: '#9896B0', marginTop: '4px' }}>This NFT is a valid TicketPro asset.</p>
 
-            {/* HEADER */}
-            <div style={{ background: 'linear-gradient(135deg,#7C3AED,#EC4899)', padding: isMobile ? '40px 20px' : '80px 48px', marginTop: '72px' }}>
-                <div style={{ maxWidth: '800px', margin: '0 auto', color: 'white' }}>
-                    <h1 style={{ fontSize: isMobile ? '32px' : '42px', fontWeight: 800 }}>Create New Event ✨</h1>
-                    <p style={{ opacity: 0.9 }}>Launch your NFT ticketing contract on the blockchain 🚀</p>
-                </div>
-            </div>
-
-            <div style={{ maxWidth: '850px', margin: '-40px auto 100px', padding: '0 20px' }}>
-                {/* Stepper Progress */}
-                <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
-                  {[1, 2, 3].map(s => (
-                    <div key={s} style={{ flex: 1, height: '6px', background: step >= s ? '#7C3AED' : '#E8E4F5', borderRadius: '10px' }}></div>
-                  ))}
+                <div style={{ marginTop: '32px', padding: '24px', background: '#FAFAFF', borderRadius: '20px', textAlign: 'left', border: '1px solid #F3F0FF' }}>
+                  <div style={{ marginBottom: '12px' }}>🎫 <b>Ticket ID:</b> #{tokenId}</div>
+                  <div style={{ marginBottom: '12px' }}>🏁 <b>Event:</b> {(event as any)?.name || 'Loading...'}</div>
+                  <div style={{ marginBottom: '12px' }}>🎖️ <b>Tier:</b> {(ticket as any).tier}</div>
+                  <div style={{ marginBottom: '12px' }}>👤 <b>Original Owner:</b> <span style={{ fontSize: '12px', color: '#7C3AED' }}>{(ticket as any).originalOwner}</span></div>
+                  <div style={{ 
+                    marginTop: '15px', 
+                    padding: '8px', 
+                    background: (ticket as any).used ? '#FEE2E2' : '#DCFCE7', 
+                    color: (ticket as any).used ? '#DC2626' : '#16A34A', 
+                    borderRadius: '8px', 
+                    textAlign: 'center', 
+                    fontWeight: 800,
+                    fontSize: '14px'
+                  }}>
+                    { (ticket as any).used ? 'ALREADY USED ❌' : 'VALID FOR ENTRY ✅' }
+                  </div>
                 </div>
 
-                <div style={{ background: 'white', padding: isMobile ? '24px' : '40px', borderRadius: '32px', boxShadow: '0 20px 50px rgba(0,0,0,0.05)', border: '1px solid #E8E4F5' }}>
-                    
-                    {/* STEP 1: INFO LENGKAP */}
-                    {step === 1 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <h2 style={{ fontWeight: 800 }}>Event Information 📝</h2>
-                            
-                            <div>
-                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Event Name</label>
-                                <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={inputStyle('name')} placeholder="e.g. Electronic Horizon Festival" />
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Date 📅</label>
-                                    <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} style={inputStyle('date')} />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Category 🏷️</label>
-                                    <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} style={inputStyle('category')}>
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* KOLOM DESKRIPSI SUDAH KEMBALI */}
-                            <div>
-                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Description 📖</label>
-                                <textarea 
-                                    value={form.description} 
-                                    onChange={e => setForm({...form, description: e.target.value})} 
-                                    style={{ ...inputStyle('description'), height: '120px', resize: 'none' }} 
-                                    placeholder="Tell the world what makes your event special..."
-                                />
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>City 📍</label>
-                                    <input value={form.city} onChange={e => setForm({...form, city: e.target.value})} style={inputStyle('city')} placeholder="Jakarta" />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Venue 🏟️</label>
-                                    <input value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} style={inputStyle('venue')} placeholder="JIEXPO Hall A" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Poster Image 🖼️</label>
-                                <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} style={inputStyle('file')} />
-                            </div>
-
-                            <button onClick={() => validate(1) && setStep(2)} style={{ padding: '16px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}>Next: Ticket Config ➡️</button>
-                        </div>
-                    )}
-
-                    {/* STEP 2: CONFIG */}
-                    {step === 2 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <h2 style={{ fontWeight: 800 }}>Ticket Configuration ⚙️</h2>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Price (ETH) 💎</label>
-                                    <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} style={inputStyle('price')} placeholder="0.05" />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 700, display: 'block', marginBottom: '8px' }}>Max Supply 🎫</label>
-                                    <input type="number" value={form.maxSupply} onChange={e => setForm({...form, maxSupply: e.target.value})} style={inputStyle('maxSupply')} placeholder="1000" />
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', borderRadius: '14px', border: '2px solid #F3F0FF', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                                <button onClick={() => validate(2) && setStep(3)} style={{ flex: 2, padding: '16px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}>Review & Deploy ➡️</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* STEP 3: REVIEW LENGKAP */}
-                    {step === 3 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <h2 style={{ fontWeight: 800 }}>Final Review ✅</h2>
-                            <div style={{ background: '#FAFAFF', padding: '24px', borderRadius: '18px', border: '1px solid #F3F0FF' }}>
-                                <div style={{ marginBottom: '12px' }}>🏁 <b>Event Name:</b> {form.name}</div>
-                                <div style={{ marginBottom: '12px' }}>🏷️ <b>Category:</b> {form.category}</div>
-                                <div style={{ marginBottom: '12px' }}>📖 <b>Description:</b> <p style={{ fontSize: '14px', color: '#4B4869', marginTop: '4px' }}>{form.description}</p></div>
-                                <div style={{ marginBottom: '12px' }}>📍 <b>Location:</b> {form.venue}, {form.city}</div>
-                                <div style={{ display: 'flex', gap: '20px' }}>
-                                    <span>💎 <b>Price:</b> {form.price} ETH</span>
-                                    <span>🎫 <b>Supply:</b> {form.maxSupply}</span>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button onClick={() => setStep(2)} style={{ flex: 1, padding: '16px', borderRadius: '14px', border: '2px solid #F3F0FF', background: 'none', fontWeight: 700, cursor: 'pointer' }}>Back</button>
-                                <button 
-                                    onClick={handleSubmit} 
-                                    disabled={uploading || isPending}
-                                    style={{ flex: 2, padding: '16px', background: '#0F0A1E', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer' }}
-                                >
-                                    {uploading ? 'Uploading to IPFS... ☁️' : isPending ? 'Confirm in Wallet... 🔑' : 'Deploy to Blockchain 🚀'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <Footer />
-        </main>
-    )
+                <button 
+                  onClick={() => window.location.href = '/verification'}
+                  style={{ marginTop: '30px', background: 'none', border: 'none', color: '#9896B0', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  ← Verify Another Ticket
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ width: '80px', height: '80px', background: '#FEE2E2', color: '#DC2626', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', margin: '0 auto 24px' }}>✕</div>
+                <h2 style={{ fontWeight: 800, fontSize: '24px', color: '#DC2626' }}>Invalid Ticket</h2>
+                <p style={{ color: '#9896B0', marginTop: '4px' }}>We couldn't find this ticket on the blockchain.</p>
+                <button onClick={() => window.location.href = '/verification'} style={{ marginTop: '30px', padding: '12px 24px', background: '#0F0A1E', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Try Again</button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </main>
+  )
 }

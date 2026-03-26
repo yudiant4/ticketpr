@@ -34,9 +34,11 @@ export default function MarketPage() {
 
             {/* PERBAIKAN: Ganti ipfsHash jadi metadataURI sesuai Smart Contract */}
             <img
-              src={event.metadataURI?.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')}
-              style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '16px', marginBottom: '16px' }}
-              alt={event.name}
+              src={
+                event.metadataURI?.startsWith('ipfs://')
+                  ? event.metadataURI.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')
+                  : `https://gateway.pinata.cloud/ipfs/${event.metadataURI}`
+              }
             />
 
             <h3 style={{ fontWeight: 800, fontSize: '20px', margin: '0 0 8px' }}>{event.name}</h3>
